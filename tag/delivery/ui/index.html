@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TaG Setup</title>
+    <link rel="stylesheet" href="./app.css" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="hero">
+        <p class="eyebrow">TaG Local Setup</p>
+        <h1>Governed mode required before TaG can be used</h1>
+        <p class="lede">Pick your runtime path, pair this machine, and complete governed activation.</p>
+      </section>
+      <section class="panel">
+        <h2>Runtime Path</h2>
+        <div class="choices">
+          <button data-runtime="managed">TaG-managed</button>
+          <button data-runtime="local">Self-managed local</button>
+          <button data-runtime="cloud">Self-managed cloud</button>
+        </div>
+        <p class="hover-note">Hover help and guided explanations land in the next implementation task.</p>
+      </section>
+      <section class="panel">
+        <h2>Trust Status</h2>
+        <p id="governance-state">Governed mode inactive</p>
+      </section>
+      <script src="./app.js"></script>
+    </main>
+  </body>
+</html>

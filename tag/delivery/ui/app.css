@@ -1,0 +1,26 @@
+body {
+  margin: 0;
+  font-family: Georgia, serif;
+  background: linear-gradient(180deg, #f4efe5 0%, #e2ddd3 100%);
+  color: #1f1c17;
+}
+
+.app {
+  max-width: 920px;
+  margin: 0 auto;
+  padding: 40px 20px 80px;
+}
+
+.panel,
+.hero {
+  background: rgba(255, 252, 245, 0.9);
+  border: 1px solid rgba(31, 28, 23, 0.12);
+  border-radius: 20px;
+  padding: 24px;
+  margin-bottom: 20px;
+}
+
+.choices {
+  display: grid;
+  gap: 12px;
+}
