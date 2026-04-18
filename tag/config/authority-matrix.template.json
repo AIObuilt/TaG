@@ -1,0 +1,21 @@
+{
+  "forks": {
+    "sales": {
+      "directory": "sales/"
+    },
+    "support": {
+      "directory": "support/"
+    }
+  },
+  "credential_scopes": {
+    "stripe": {
+      "forks": ["sales"]
+    },
+    "zendesk": {
+      "forks": ["support"]
+    },
+    "openai": {
+      "forks": ["shared"]
+    }
+  }
+}

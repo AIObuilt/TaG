@@ -1,0 +1,8 @@
+[
+  {
+    "skill": "superpowers:writing-plans",
+    "directive": "You must run the Skill(superpowers:writing-plans) tool before implementing TaG product changes.",
+    "reason": "Prompt contains planning or implementation signals for the TaG product surface.",
+    "keywords": ["plan", "implement", "feature", "build", "create", "design"]
+  }
+]

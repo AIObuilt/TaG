@@ -1,0 +1,50 @@
+{
+  "title": "TaG Fork Manifest",
+  "type": "object",
+  "required": [
+    "version",
+    "fork_id",
+    "display_name",
+    "runtime_scope",
+    "policy_scope",
+    "memory_scope",
+    "allowed_runtimes"
+  ],
+  "properties": {
+    "version": {
+      "type": "integer",
+      "const": 1
+    },
+    "fork_id": {
+      "type": "string"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "runtime_scope": {
+      "type": "string"
+    },
+    "policy_scope": {
+      "type": "string"
+    },
+    "memory_scope": {
+      "type": "string"
+    },
+    "allowed_runtimes": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "description": {
+      "type": "string"
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "additionalProperties": false
+}

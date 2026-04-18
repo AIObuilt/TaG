@@ -1,0 +1,18 @@
+{
+  "version": 1,
+  "fork_id": "customer-ops",
+  "display_name": "Customer Operations",
+  "runtime_scope": "customer-ops",
+  "policy_scope": "customer-ops",
+  "memory_scope": "customer-ops",
+  "allowed_runtimes": [
+    "codex",
+    "openclaw",
+    "claude"
+  ],
+  "description": "Generic isolated workstream for customer-installed TaG operations.",
+  "tags": [
+    "template",
+    "isolated"
+  ]
+}

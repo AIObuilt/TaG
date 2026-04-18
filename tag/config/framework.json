@@ -1,0 +1,26 @@
+{
+  "surfaces": ["code", "comms", "browser", "ops"],
+  "runtimes": {
+    "claude": "code",
+    "codex": "code",
+    "openclaw": "code",
+    "voice": "comms",
+    "browser": "browser",
+    "ops": "ops"
+  },
+  "policy_baseline": {
+    "mode": "audit-first",
+    "unknown_action_default": "audit",
+    "known_sensitive_default": "hold",
+    "workflow": {
+      "pre_commit": ["build", "security", "qa"],
+      "pre_deploy": ["build", "security", "qa", "commit"],
+      "post_deploy": ["live_qa", "live_security"]
+    },
+    "workflow_enforcement": {
+      "pre_commit": "audit",
+      "pre_deploy": "hold",
+      "post_deploy": "hold"
+    }
+  }
+}
