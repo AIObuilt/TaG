@@ -18,7 +18,7 @@ def _find_tag_home() -> Path:
 
     here = Path(__file__).resolve().parent
     for ancestor in [here, *here.parents]:
-        if (ancestor / ".vance-root").exists():
+        if (ancestor / ".tag-root").exists():
             return ancestor
         if ancestor == ancestor.parent:
             break

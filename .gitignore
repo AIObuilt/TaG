@@ -1,6 +1,35 @@
 __pycache__/
 *.pyc
+*.pyo
 .DS_Store
 tag-runtime/
 .pytest_cache/
+**/.pytest_cache/
 
+# Secrets and credentials
+.env
+.env.*
+*.key
+*.pem
+*.p12
+*.pfx
+*.cert
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*~
+
+# Python packaging
+*.egg-info/
+.eggs/
+dist/
+build/
+node_modules/
+
+# OS
+Thumbs.db
+
+# Logs
+*.log

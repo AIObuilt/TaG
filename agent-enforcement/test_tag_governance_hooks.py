@@ -6,7 +6,7 @@ import unittest
 from pathlib import Path
 
 
-TAG_HOOKS = Path("/Users/jason/vance/tag/hooks")
+TAG_HOOKS = Path(__file__).resolve().parents[1] / "tag" / "hooks"
 
 
 def _run_hook(hook_name: str, payload: dict, env: dict | None = None) -> subprocess.CompletedProcess[str]:
