@@ -8,6 +8,10 @@
 
 AI agents now write code, run commands, manage credentials, call APIs, and deploy to production. Most of them still do it with broad permissions and weak controls. TaG puts governance in the execution path before an agent can do damage.
 
+TaG was architected by Jason McCall and built through Vance, a governed gateway where multiple humans and multiple LLM channels operate inside the same trust, governance, and execution system with shared operational memory and bounded execution.
+
+It was designed to keep a human decision-maker inside the execution loop without forcing that person to manually operate every step.
+
 ---
 
 ## The Problem
