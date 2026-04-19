@@ -1,0 +1,23 @@
+{
+  "verification": {
+    "required_for_completion": true,
+    "require_evidence": true
+  },
+  "repo_hygiene": {
+    "require_clean_release_state": true,
+    "require_verification_artifacts": true,
+    "require_touched_file_coverage": false
+  },
+  "browser_qa": {
+    "required_for_ui_work": true,
+    "allow_skip_with_reason": true
+  },
+  "browser_security": {
+    "required_for_preview_or_deploy_work": true,
+    "allow_skip_with_reason": true
+  },
+  "completion": {
+    "require_evidence_handles": true,
+    "allow_skip_with_reason": true
+  }
+}
