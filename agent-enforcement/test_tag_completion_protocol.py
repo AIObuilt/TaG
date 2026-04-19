@@ -51,7 +51,7 @@ class TagCompletionProtocolTests(unittest.TestCase):
             env = {**os.environ, "TAG_HOME": tmp}
             data = _run_hook(
                 "verification-gate.py",
-                {"work_type": "code", "evidence_ids": []},
+                {"claim_type": "complete", "work_type": "code", "evidence_ids": []},
                 env=env,
             )
             self.assertEqual(data["decision"], "hold")
@@ -62,7 +62,17 @@ class TagCompletionProtocolTests(unittest.TestCase):
             env = {**os.environ, "TAG_HOME": tmp}
             data = _run_hook(
                 "verification-gate.py",
-                {"work_type": "ui", "evidence_ids": []},
+                {"claim_type": "complete", "work_type": "ui", "evidence_ids": []},
+                env=env,
+            )
+            self.assertEqual(data, {})
+
+    def test_verification_gate_ignores_non_completion_claims(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = {**os.environ, "TAG_HOME": tmp}
+            data = _run_hook(
+                "verification-gate.py",
+                {"claim_type": "status", "work_type": "code", "evidence_ids": []},
                 env=env,
             )
             self.assertEqual(data, {})
@@ -73,7 +83,7 @@ class TagCompletionProtocolTests(unittest.TestCase):
             _write_evidence_record(tmp, "ev-qa-1", "qa", "pass")
             data = _run_hook(
                 "verification-gate.py",
-                {"work_type": "code", "evidence_ids": ["ev-qa-1"]},
+                {"claim_type": "release", "work_type": "code", "evidence_ids": ["ev-qa-1"]},
                 env=env,
             )
             self.assertEqual(data["decision"], "hold")
@@ -85,7 +95,7 @@ class TagCompletionProtocolTests(unittest.TestCase):
             _write_evidence_record(tmp, "ev-code-1", "code", "pass")
             data = _run_hook(
                 "verification-gate.py",
-                {"work_type": "code", "evidence_ids": ["ev-code-1"]},
+                {"claim_type": "complete", "work_type": "code", "evidence_ids": ["ev-code-1"]},
                 env=env,
             )
             self.assertEqual(data, {})
@@ -101,7 +111,7 @@ class TagCompletionProtocolTests(unittest.TestCase):
             self.assertEqual(data["decision"], "block")
             self.assertIn("evidence", data["reason"])
 
-    def test_completion_claim_guard_ignores_non_code_work(self) -> None:
+    def test_completion_claim_guard_blocks_done_claim_for_non_code_work(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             env = {**os.environ, "TAG_HOME": tmp}
             data = _run_hook(
@@ -109,7 +119,8 @@ class TagCompletionProtocolTests(unittest.TestCase):
                 {"response": "Done. The issue is fixed.", "work_type": "ui", "evidence_ids": []},
                 env=env,
             )
-            self.assertEqual(data, {})
+            self.assertEqual(data["decision"], "block")
+            self.assertIn("evidence", data["reason"])
 
 
 if __name__ == "__main__":
