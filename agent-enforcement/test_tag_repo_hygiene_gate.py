@@ -145,19 +145,9 @@ class TagRepoHygieneGateTests(unittest.TestCase):
             self.assertEqual(data["decision"], "hold")
             self.assertIn("verification-artifacts", data["reason"])
 
-    def test_blocks_claim_when_touched_file_coverage_is_required_and_missing(self) -> None:
+    def test_missing_state_does_not_imply_touched_file_coverage_when_required(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             env = {**os.environ, "TAG_HOME": tmp}
-            _write_hygiene_state(
-                tmp,
-                json.dumps(
-                    {
-                        "clean": True,
-                        "verification_artifacts_present": True,
-                        "touched_file_coverage_present": False,
-                    }
-                ),
-            )
             policy = {
                 "verification": {
                     "required_for_completion": True,

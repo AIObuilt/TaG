@@ -13,7 +13,7 @@ REPO_HYGIENE_FILE = CONTEXT_DIR / "repo-hygiene.json"
 DEFAULT_REPO_HYGIENE = {
     "clean": True,
     "verification_artifacts_present": True,
-    "touched_file_coverage_present": True,
+    "touched_file_coverage_present": False,
 }
 
 
@@ -47,8 +47,7 @@ def main() -> int:
     try:
         protocol = load_coding_protocol()
     except Exception:
-        print(json.dumps({}))
-        return 0
+        return hold("coding-protocol-unavailable")
 
     state = load_repo_hygiene()
     if state is None:
