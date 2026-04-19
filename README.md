@@ -96,6 +96,18 @@ python3 agent-enforcement/test_tag_policy_model.py
 
 All tests use the standard library. No additional packages required.
 
+### Delivery Phase 1 Verification
+
+```bash
+python3 agent-enforcement/test_tag_delivery_paths.py
+python3 agent-enforcement/test_tag_hosted_enrollment.py
+python3 agent-enforcement/test_tag_bootstrap_manifest.py
+python3 agent-enforcement/test_tag_setup_state.py
+python3 agent-enforcement/test_tag_governed_install.py
+python3 agent-enforcement/test_tag_delivery_ui.py
+python3 agent-enforcement/test_tag_setup_server.py
+```
+
 ---
 
 ## Authority Matrix
