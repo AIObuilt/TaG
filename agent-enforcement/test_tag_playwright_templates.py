@@ -19,6 +19,15 @@ class TagPlaywrightTemplateTests(unittest.TestCase):
         self.assertIn("response", security)
         self.assertIn("strict-transport-security", security.lower())
 
+    def test_templates_escape_quote_containing_urls(self) -> None:
+        base_url = 'https://example.test/path?value="quoted"&mode=test'
+        qa = build_qa_template(base_url)
+        security = build_security_template(base_url)
+        self.assertIn('"https://example.test/path?value=\\\"quoted\\\"&mode=test"', qa)
+        self.assertIn('"https://example.test/path?value=\\\"quoted\\\"&mode=test"', security)
+        self.assertNotIn('page.goto("https://example.test/path?value="quoted"&mode=test")', qa)
+        self.assertNotIn('page.goto("https://example.test/path?value="quoted"&mode=test")', security)
+
 
 if __name__ == "__main__":
     unittest.main()
