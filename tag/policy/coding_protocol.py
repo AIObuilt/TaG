@@ -3,10 +3,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 
-from tag_config import CONFIG_DIR
-
-
-CODING_PROTOCOL_FILE = CONFIG_DIR / "coding-protocol.json"
+HERE = Path(__file__).resolve().parent
+CODING_PROTOCOL_FILE = HERE.parent / "config" / "coding-protocol.json"
 
 
 def _require_bool(value: object, field_name: str) -> bool:
@@ -28,9 +26,17 @@ def _validate_coding_protocol(protocol: object) -> dict:
     if not isinstance(protocol, dict):
         raise ValueError("coding protocol must be a JSON object")
     _require_section(protocol, "verification", ("required_for_completion", "require_evidence"))
-    _require_section(protocol, "repo_hygiene", ("require_clean_release_state", "require_verification_artifacts", "require_touched_file_coverage"))
+    _require_section(
+        protocol,
+        "repo_hygiene",
+        ("require_clean_release_state", "require_verification_artifacts", "require_touched_file_coverage"),
+    )
     _require_section(protocol, "browser_qa", ("required_for_ui_work", "allow_skip_with_reason"))
-    _require_section(protocol, "browser_security", ("required_for_preview_or_deploy_work", "allow_skip_with_reason"))
+    _require_section(
+        protocol,
+        "browser_security",
+        ("required_for_preview_or_deploy_work", "allow_skip_with_reason"),
+    )
     _require_section(protocol, "completion", ("require_evidence_handles", "allow_skip_with_reason"))
     return protocol
 
