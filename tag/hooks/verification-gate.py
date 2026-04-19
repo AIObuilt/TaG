@@ -21,7 +21,7 @@ def main() -> int:
     try:
         payload = json.load(sys.stdin)
         protocol = load_coding_protocol()
-        if payload.get("claim_type") not in {"complete", "release"}:
+        if payload.get("work_type") != "code":
             print(json.dumps({}))
             return 0
         if not protocol["verification"]["required_for_completion"]:
@@ -34,13 +34,18 @@ def main() -> int:
             return 0
 
         evidence = load_evidence_records(VERIFICATION_EVIDENCE_FILE)
-        known_ids = {str(row.get("evidence_id", "")) for row in evidence if row.get("evidence_id")}
-        missing = sorted(evidence_ids - known_ids)
-        if missing:
-            print(json.dumps({"decision": "hold", "reason": f"verification-evidence-missing:{','.join(missing)}"}))
-            return 0
+        evidence_by_id = {
+            str(row.get("evidence_id", "")): row
+            for row in evidence
+            if row.get("evidence_id")
+        }
+        for evidence_id in evidence_ids:
+            row = evidence_by_id.get(evidence_id)
+            if row and row.get("kind") == "code" and row.get("status") == "pass":
+                print(json.dumps({}))
+                return 0
 
-        print(json.dumps({}))
+        print(json.dumps({"decision": "hold", "reason": "verification-code-evidence-required"}))
         return 0
     except Exception:
         print(json.dumps({}))

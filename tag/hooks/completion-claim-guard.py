@@ -23,6 +23,9 @@ def main() -> int:
     try:
         payload = json.load(sys.stdin)
         response = str(payload.get("response", ""))
+        if payload.get("work_type") != "code":
+            print(json.dumps({}))
+            return 0
         protocol = load_coding_protocol()
         if not CLAIM_PATTERN.search(response):
             print(json.dumps({}))
