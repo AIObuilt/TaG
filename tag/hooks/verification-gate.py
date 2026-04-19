@@ -30,6 +30,9 @@ def main() -> int:
         if not protocol["verification"]["required_for_completion"]:
             print(json.dumps({}))
             return 0
+        if not protocol["verification"]["require_evidence"]:
+            print(json.dumps({}))
+            return 0
 
         evidence_ids = _evidence_ids(payload)
         if not evidence_ids:

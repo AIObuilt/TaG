@@ -38,6 +38,9 @@ def main() -> int:
     try:
         payload = json.load(sys.stdin)
         protocol = load_coding_protocol()
+        if payload.get("claim_type") not in {"complete", "release"}:
+            print(json.dumps({}))
+            return 0
         if payload.get("work_type") != "ui" or not protocol["browser_qa"]["required_for_ui_work"]:
             print(json.dumps({}))
             return 0

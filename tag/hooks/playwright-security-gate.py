@@ -38,6 +38,9 @@ def main() -> int:
     try:
         payload = json.load(sys.stdin)
         protocol = load_coding_protocol()
+        if payload.get("claim_type") not in {"complete", "release"}:
+            print(json.dumps({}))
+            return 0
         if payload.get("work_type") not in {"preview", "deploy"} or not protocol["browser_security"]["required_for_preview_or_deploy_work"]:
             print(json.dumps({}))
             return 0
