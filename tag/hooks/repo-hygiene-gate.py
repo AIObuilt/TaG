@@ -55,7 +55,7 @@ def main() -> int:
 
     hygiene_policy = protocol["repo_hygiene"]
 
-    if claim_type == "release" and hygiene_policy["require_clean_release_state"] and state.get("clean") is not True:
+    if claim_type in {"release", "complete"} and hygiene_policy["require_clean_release_state"] and state.get("clean") is not True:
         return hold("dirty-repo-state")
 
     if hygiene_policy["require_verification_artifacts"] and state.get("verification_artifacts_present") is not True:

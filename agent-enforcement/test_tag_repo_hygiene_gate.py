@@ -112,7 +112,7 @@ class TagRepoHygieneGateTests(unittest.TestCase):
             data = _run_hook({"claim_type": "release"}, env)
             self.assertEqual(data, {})
 
-    def test_allows_complete_claim_when_repo_is_dirty_but_artifacts_exist(self) -> None:
+    def test_blocks_complete_claim_when_repo_is_dirty(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             env = {**os.environ, "TAG_HOME": tmp}
             _write_hygiene_state(
@@ -126,7 +126,8 @@ class TagRepoHygieneGateTests(unittest.TestCase):
                 ),
             )
             data = _run_hook({"claim_type": "complete"}, env)
-            self.assertEqual(data, {})
+            self.assertEqual(data["decision"], "hold")
+            self.assertIn("dirty", data["reason"])
 
     def test_blocks_claim_when_verification_artifacts_are_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
