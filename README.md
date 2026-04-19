@@ -6,7 +6,7 @@
 
 **The local-first governance core for AI coding agents.**
 
-AI agents write code, run commands, manage credentials, call APIs, and deploy to production. They do all of this with broad permissions and no audit trail. TaG puts guardrails around that power.
+AI agents now write code, run commands, manage credentials, call APIs, and deploy to production. Most of them still do it with broad permissions and weak controls. TaG puts governance in the execution path before an agent can do damage.
 
 ---
 
@@ -21,7 +21,7 @@ AI coding agents operate with your credentials, your file system, and your cloud
 - Sensitive data gets exfiltrated through web fetches
 - There is no record of what the agent did or why
 
-TaG intercepts agent tool calls via hooks and enforces policies before the action executes. Every decision is logged. Every boundary is enforced. The open-source core runs locally with no hosted dependency.
+TaG intercepts tool calls before execution, enforces policy in real time, and writes an audit trail as it goes. The open-source core runs locally with no hosted dependency.
 
 ---
 
@@ -42,6 +42,20 @@ TaG intercepts agent tool calls via hooks and enforces policies before the actio
 | Agent identity/role enforcement | `agent-enforcer` |
 
 Additional operational hooks: `session-autosave`, `crash-checkpoint`, `compaction-recovery`, `memory-autosave`, `skill-autoload`.
+
+## Why It Matters
+
+Without governance, AI coding agents are effectively privileged operators with no consistent budget control, no scoped credential model, and no reliable release discipline.
+
+TaG changes that by putting policy checks between the agent and the action:
+
+- before money is spent
+- before credentials cross scope
+- before a release moves without build, security, and QA gates
+- before an agent crosses project boundaries
+- before sensitive data leaves through a web request
+
+The result is simple: agents stay useful, but they stop being unchecked.
 
 ---
 
@@ -88,6 +102,16 @@ The delivery layer is separate and still evolving:
 - billing, fleet, and support surfaces
 
 That split is intentional. The governance core should be inspectable, runnable, and useful on its own.
+
+## Example
+
+If an agent tries to deploy without passing build, security, or QA gates, TaG blocks the action before it happens.
+
+If an agent tries to access credentials owned by another fork, TaG blocks it and logs the reason.
+
+If an agent tries to send sensitive data to a known capture endpoint, TaG blocks the request and writes the event to the local audit trail.
+
+That is the product: not post-hoc analysis, but governed execution.
 
 ---
 
