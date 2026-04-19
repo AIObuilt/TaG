@@ -92,6 +92,10 @@ Tool Call  --->  TaG Hook  --->  Policy Check (authority-matrix.json)
 
 ## Open Core
 
+**TaG's governance core is open.**
+
+**TaG is model- and provider-agnostic by design, and enterprise deployments get access to cost-aware routing across latency, capability, and cost. Advanced continuity and failover behavior live in the product layer.**
+
 This repository is the TaG governance core:
 
 - local trust and governance hooks
