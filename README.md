@@ -4,7 +4,7 @@
 
 # TaG -- Trust and Governance for AI Coding Agents
 
-**The first local-first governance framework for AI coding agents.**
+**The local-first governance core for AI coding agents.**
 
 AI agents write code, run commands, manage credentials, call APIs, and deploy to production. They do all of this with broad permissions and no audit trail. TaG puts guardrails around that power.
 
@@ -21,7 +21,7 @@ AI coding agents operate with your credentials, your file system, and your cloud
 - Sensitive data gets exfiltrated through web fetches
 - There is no record of what the agent did or why
 
-TaG intercepts agent tool calls via hooks and enforces policies before the action executes. Every decision is logged. Every boundary is enforced. Nothing requires a cloud service.
+TaG intercepts agent tool calls via hooks and enforces policies before the action executes. Every decision is logged. Every boundary is enforced. The open-source core runs locally with no hosted dependency.
 
 ---
 
@@ -49,7 +49,7 @@ Additional operational hooks: `session-autosave`, `crash-checkpoint`, `compactio
 
 TaG hooks into the agent's tool-call lifecycle. Before a tool call executes, TaG evaluates it against a policy defined in a JSON authority matrix. The hook either allows the call, blocks it, or flags it for human review.
 
-All state stays local. Audit logs are append-only JSONL files on your machine. Policies are plain JSON. There is no server, no account, no telemetry.
+All state stays local. Audit logs are append-only JSONL files on your machine. Policies are plain JSON. The open-source core does not require a server, account, or telemetry.
 
 ```
 Agent (Claude Code / Codex / Cursor)
@@ -71,6 +71,23 @@ Tool Call  --->  TaG Hook  --->  Policy Check (authority-matrix.json)
 - **Append-only audit trail** -- every gate decision logged as JSONL
 - **Policy-as-code** -- JSON authority matrix defines all permissions
 - **Works with Claude Code today**, designed for cross-platform support (Codex, Cursor, and others)
+
+## Open Core
+
+This repository is the TaG governance core:
+
+- local trust and governance hooks
+- workflow policy/compiler surfaces
+- operational-memory structure
+- product-safe runtime and fork templates
+
+The delivery layer is separate and still evolving:
+
+- local GUI installer
+- hosted onboarding
+- billing, fleet, and support surfaces
+
+That split is intentional. The governance core should be inspectable, runnable, and useful on its own.
 
 ---
 
@@ -146,7 +163,7 @@ Licensed under the [Business Source License 1.1](LICENSE). Free for internal use
 
 TaG is built by [AIO Built](https://aiobuilt.co).
 
-Author: Jason McCall (jason@finditsales.com)
+Contact: vance@aiobuilt.co
 
 ---
 
