@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="assets/apple-icon.png" alt="TaG" width="120" />
+</p>
+
 # TaG -- Trust and Governance for AI Coding Agents
 
 **The first local-first governance framework for AI coding agents.**
