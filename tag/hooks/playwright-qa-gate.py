@@ -10,13 +10,28 @@ from tag.verification.evidence import load_evidence_records
 from tag_config import VERIFICATION_EVIDENCE_FILE
 
 
-def _has_passed_qa_evidence(evidence_ids: list[str]) -> bool:
+def _normalize_target(value: object) -> str:
+    return str(value or "").strip()
+
+
+def _has_passed_qa_evidence(evidence_ids: list[str], target: str) -> bool:
     evidence = {row.get("evidence_id"): row for row in load_evidence_records(VERIFICATION_EVIDENCE_FILE)}
     for evidence_id in evidence_ids:
         row = evidence.get(evidence_id)
-        if row and row.get("kind") == "qa" and row.get("status") == "pass":
+        if (
+            row
+            and row.get("kind") == "qa"
+            and row.get("status") == "pass"
+            and _normalize_target(row.get("target")) == target
+        ):
             return True
     return False
+
+
+def _has_skip_reason(payload: dict, protocol: dict) -> bool:
+    if not protocol["browser_qa"]["allow_skip_with_reason"]:
+        return False
+    return bool(_normalize_target(payload.get("skip_reason")))
 
 
 def main() -> int:
@@ -26,7 +41,11 @@ def main() -> int:
         if payload.get("work_type") != "ui" or not protocol["browser_qa"]["required_for_ui_work"]:
             print(json.dumps({}))
             return 0
-        if _has_passed_qa_evidence(payload.get("evidence_ids", [])):
+        target = _normalize_target(payload.get("target"))
+        if _has_skip_reason(payload, protocol):
+            print(json.dumps({}))
+            return 0
+        if _has_passed_qa_evidence(payload.get("evidence_ids", []), target):
             print(json.dumps({}))
             return 0
         print(json.dumps({"decision": "hold", "reason": "browser-qa-evidence-required"}))
