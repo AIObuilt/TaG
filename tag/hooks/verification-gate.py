@@ -7,6 +7,7 @@ import sys
 import _tag_bootstrap  # noqa: F401
 from tag.policy.coding_protocol import load_coding_protocol
 from tag.verification.evidence import load_evidence_records
+from tag.verification.final_claims import is_final_claim
 from tag_config import VERIFICATION_EVIDENCE_FILE
 
 
@@ -21,7 +22,7 @@ def main() -> int:
     try:
         payload = json.load(sys.stdin)
         protocol = load_coding_protocol()
-        if payload.get("claim_type") not in {"complete", "release"}:
+        if not is_final_claim(payload):
             print(json.dumps({}))
             return 0
         if payload.get("work_type") != "code":

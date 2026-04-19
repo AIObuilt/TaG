@@ -15,7 +15,7 @@ if str(ROOT) not in sys.path:
 if str(HOOKS) not in sys.path:
     sys.path.insert(0, str(HOOKS))
 
-from tag.verification.repo_hygiene import write_repo_hygiene_state
+from tag.verification.repo_hygiene import main as repo_hygiene_main, write_repo_hygiene_state
 
 
 def _run_hook(payload: dict, env: dict) -> dict:
@@ -110,6 +110,34 @@ class TagRepoHygieneGateTests(unittest.TestCase):
             self.assertEqual(
                 json.loads(target.read_text(encoding="utf-8")),
                 state,
+            )
+
+    def test_repo_hygiene_writer_rejects_non_bool_inputs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "repo-hygiene.json"
+            with self.assertRaises(ValueError):
+                write_repo_hygiene_state(
+                    clean="false",
+                    verification_artifacts_present=True,
+                    touched_file_coverage_present=False,
+                    path=target,
+                )
+
+    def test_repo_hygiene_cli_writes_state_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            runtime = Path(tmp) / "tag-runtime" / "context"
+            runtime.mkdir(parents=True, exist_ok=True)
+            target = runtime / "repo-hygiene.json"
+            exit_code = repo_hygiene_main(["false", "true", "false", str(target)])
+            self.assertEqual(exit_code, 0)
+            self.assertTrue(target.exists())
+            self.assertEqual(
+                json.loads(target.read_text(encoding="utf-8")),
+                {
+                    "clean": False,
+                    "verification_artifacts_present": True,
+                    "touched_file_coverage_present": False,
+                },
             )
 
     def test_blocks_release_claim_when_repo_marked_dirty(self) -> None:

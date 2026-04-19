@@ -6,6 +6,7 @@ import sys
 
 import _tag_bootstrap  # noqa: F401
 from tag.policy.coding_protocol import load_coding_protocol
+from tag.verification.final_claims import claim_type, is_final_claim
 from tag_config import CONTEXT_DIR
 
 
@@ -34,10 +35,10 @@ def main() -> int:
         print(json.dumps({}))
         return 0
 
-    claim_type = str(payload.get("claim_type", "")).strip().lower()
-    if claim_type not in {"release", "complete"}:
+    if not is_final_claim(payload):
         print(json.dumps({}))
         return 0
+    current_claim_type = claim_type(payload) or "complete"
 
     try:
         protocol = load_coding_protocol()
@@ -52,7 +53,7 @@ def main() -> int:
 
     hygiene_policy = protocol["repo_hygiene"]
 
-    if claim_type in {"release", "complete"} and hygiene_policy["require_clean_release_state"] and state.get("clean") is not True:
+    if current_claim_type in {"release", "complete"} and hygiene_policy["require_clean_release_state"] and state.get("clean") is not True:
         return hold("dirty-repo-state")
 
     if hygiene_policy["require_verification_artifacts"] and state.get("verification_artifacts_present") is not True:

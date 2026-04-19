@@ -239,6 +239,36 @@ class TagCompletionProtocolTests(unittest.TestCase):
             self.assertEqual(data["decision"], "block")
             self.assertIn("evidence", data["reason"])
 
+    def test_verification_gate_holds_final_claim_in_response_without_claim_type(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = {**os.environ, "TAG_HOME": tmp}
+            data = _run_hook(
+                "verification-gate.py",
+                {
+                    "response": "Done. The issue is fixed.",
+                    "work_type": "code",
+                    "evidence_ids": [],
+                },
+                env=env,
+            )
+            self.assertEqual(data["decision"], "hold")
+            self.assertIn("verification", data["reason"])
+
+    def test_verification_gate_ignores_non_final_status_claim_type_even_with_strong_verbs(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = {**os.environ, "TAG_HOME": tmp}
+            data = _run_hook(
+                "verification-gate.py",
+                {
+                    "claim_type": "status",
+                    "response": "Fixed the flaky test; verification is still running.",
+                    "work_type": "code",
+                    "evidence_ids": [],
+                },
+                env=env,
+            )
+            self.assertEqual(data, {})
+
     def test_completion_claim_guard_allows_skip_reason_when_policy_explicitly_permits_it(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             env = {**os.environ, "TAG_HOME": tmp}

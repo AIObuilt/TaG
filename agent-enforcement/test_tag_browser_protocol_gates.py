@@ -141,6 +141,38 @@ class TagBrowserProtocolGateTests(unittest.TestCase):
             )
             self.assertEqual(data, {})
 
+    def test_qa_gate_holds_final_claim_in_response_without_claim_type(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = {**os.environ, "TAG_HOME": tmp}
+            data = _run_hook(
+                "playwright-qa-gate.py",
+                {
+                    "response": "Done. UI is ready.",
+                    "work_type": "ui",
+                    "evidence_ids": [],
+                    "target": "https://app.example.test",
+                },
+                env,
+            )
+            self.assertEqual(data["decision"], "hold")
+            self.assertIn("qa", data["reason"])
+
+    def test_qa_gate_ignores_non_final_status_claim_type_even_with_done_prefix(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = {**os.environ, "TAG_HOME": tmp}
+            data = _run_hook(
+                "playwright-qa-gate.py",
+                {
+                    "claim_type": "status",
+                    "response": "Done running lint; now fixing the remaining failures.",
+                    "work_type": "ui",
+                    "evidence_ids": [],
+                    "target": "https://app.example.test",
+                },
+                env,
+            )
+            self.assertEqual(data, {})
+
     def test_qa_gate_holds_ui_work_with_stale_qa_evidence(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             env = {**os.environ, "TAG_HOME": tmp}
@@ -302,6 +334,38 @@ class TagBrowserProtocolGateTests(unittest.TestCase):
                 "playwright-security-gate.py",
                 {
                     "claim_type": "status",
+                    "work_type": "preview",
+                    "evidence_ids": [],
+                    "target": "https://preview.example.test",
+                },
+                env,
+            )
+            self.assertEqual(data, {})
+
+    def test_security_gate_holds_final_claim_in_response_without_claim_type(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = {**os.environ, "TAG_HOME": tmp}
+            data = _run_hook(
+                "playwright-security-gate.py",
+                {
+                    "response": "Done. Preview is ready to release.",
+                    "work_type": "preview",
+                    "evidence_ids": [],
+                    "target": "https://preview.example.test",
+                },
+                env,
+            )
+            self.assertEqual(data["decision"], "hold")
+            self.assertIn("security", data["reason"])
+
+    def test_security_gate_ignores_non_final_status_claim_type_even_with_shipped_prefix(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = {**os.environ, "TAG_HOME": tmp}
+            data = _run_hook(
+                "playwright-security-gate.py",
+                {
+                    "claim_type": "status",
+                    "response": "Shipped the refactor to the branch, still validating.",
                     "work_type": "preview",
                     "evidence_ids": [],
                     "target": "https://preview.example.test",
