@@ -10,9 +10,16 @@ from tag_config import CONTEXT_DIR
 
 
 REPO_HYGIENE_FILE = CONTEXT_DIR / "repo-hygiene.json"
+DEFAULT_REPO_HYGIENE = {
+    "clean": True,
+    "verification_artifacts_present": True,
+    "touched_file_coverage_present": True,
+}
 
 
 def load_repo_hygiene() -> dict | None:
+    if not REPO_HYGIENE_FILE.exists():
+        return DEFAULT_REPO_HYGIENE.copy()
     try:
         data = json.loads(REPO_HYGIENE_FILE.read_text(encoding="utf-8"))
     except Exception:

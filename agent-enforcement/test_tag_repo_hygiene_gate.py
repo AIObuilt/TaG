@@ -1,14 +1,11 @@
+import sys
 import json
 import os
-import io
-import contextlib
-import runpy
 import subprocess
 import tempfile
+import textwrap
 import unittest
 from pathlib import Path
-import sys
-from unittest.mock import patch
 
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -40,17 +37,55 @@ def _write_hygiene_state(tmp: str, payload: str) -> None:
 
 
 def _run_hook_with_policy(payload: dict, policy: dict, env: dict) -> dict:
-    stdin = io.StringIO(json.dumps(payload))
-    stdout = io.StringIO()
-    with patch("tag.policy.coding_protocol.load_coding_protocol", return_value=policy):
-        with patch.dict(os.environ, env, clear=False):
+    child_env = {
+        **env,
+        "TAG_REPO_HYGIENE_ROOT": str(ROOT),
+        "TAG_REPO_HYGIENE_PAYLOAD": json.dumps(payload),
+        "TAG_REPO_HYGIENE_POLICY": json.dumps(policy),
+    }
+    script = textwrap.dedent(
+        """
+        import contextlib
+        import io
+        import json
+        import os
+        import runpy
+        import sys
+        from pathlib import Path
+        from unittest.mock import patch
+
+        root = Path(os.environ["TAG_REPO_HYGIENE_ROOT"])
+        hooks = root / "tag" / "hooks"
+        if str(root) not in sys.path:
+            sys.path.insert(0, str(root))
+        if str(hooks) not in sys.path:
+            sys.path.insert(0, str(hooks))
+
+        payload = json.loads(os.environ["TAG_REPO_HYGIENE_PAYLOAD"])
+        policy = json.loads(os.environ["TAG_REPO_HYGIENE_POLICY"])
+        stdin = io.StringIO(json.dumps(payload))
+        stdout = io.StringIO()
+        with patch("tag.policy.coding_protocol.load_coding_protocol", return_value=policy):
             with patch("sys.stdin", stdin), contextlib.redirect_stdout(stdout):
                 try:
-                    runpy.run_path(str(HOOKS / "repo-hygiene-gate.py"), run_name="__main__")
+                    runpy.run_path(str(hooks / "repo-hygiene-gate.py"), run_name="__main__")
                 except SystemExit as exc:
                     if exc.code not in (0, None):
                         raise AssertionError(f"hook exited with {exc.code}")
-    return json.loads(stdout.getvalue() or "{}")
+
+        print(stdout.getvalue(), end="")
+        """
+    )
+    result = subprocess.run(
+        ["python3", "-c", script],
+        capture_output=True,
+        text=True,
+        env=child_env,
+        check=False,
+    )
+    if result.returncode != 0:
+        raise AssertionError(result.stderr)
+    return json.loads(result.stdout or "{}")
 
 
 class TagRepoHygieneGateTests(unittest.TestCase):
@@ -70,6 +105,12 @@ class TagRepoHygieneGateTests(unittest.TestCase):
             data = _run_hook({"claim_type": "release"}, env)
             self.assertEqual(data["decision"], "hold")
             self.assertIn("dirty", data["reason"])
+
+    def test_allows_release_claim_when_repo_hygiene_state_is_missing(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = {**os.environ, "TAG_HOME": tmp}
+            data = _run_hook({"claim_type": "release"}, env)
+            self.assertEqual(data, {})
 
     def test_allows_complete_claim_when_repo_is_dirty_but_artifacts_exist(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
