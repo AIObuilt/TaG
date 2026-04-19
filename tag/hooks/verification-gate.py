@@ -54,7 +54,7 @@ def main() -> int:
         print(json.dumps({"decision": "hold", "reason": "verification-code-evidence-required"}))
         return 0
     except Exception:
-        print(json.dumps({}))
+        print(json.dumps({"decision": "hold", "reason": "verification-gate-error"}))
         return 0
 
 

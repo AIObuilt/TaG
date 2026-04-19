@@ -15,6 +15,8 @@ if str(ROOT) not in sys.path:
 if str(HOOKS) not in sys.path:
     sys.path.insert(0, str(HOOKS))
 
+from tag.verification.repo_hygiene import write_repo_hygiene_state
+
 
 def _run_hook(payload: dict, env: dict) -> dict:
     result = subprocess.run(
@@ -33,7 +35,13 @@ def _run_hook(payload: dict, env: dict) -> dict:
 def _write_hygiene_state(tmp: str, payload: str) -> None:
     runtime = Path(tmp) / "tag-runtime" / "context"
     runtime.mkdir(parents=True, exist_ok=True)
-    (runtime / "repo-hygiene.json").write_text(payload, encoding="utf-8")
+    state = json.loads(payload)
+    write_repo_hygiene_state(
+        clean=state["clean"],
+        verification_artifacts_present=state["verification_artifacts_present"],
+        touched_file_coverage_present=state["touched_file_coverage_present"],
+        path=runtime / "repo-hygiene.json",
+    )
 
 
 def _run_hook_with_policy(payload: dict, policy: dict, env: dict) -> dict:
@@ -89,6 +97,21 @@ def _run_hook_with_policy(payload: dict, policy: dict, env: dict) -> dict:
 
 
 class TagRepoHygieneGateTests(unittest.TestCase):
+    def test_repo_hygiene_writer_creates_expected_state_file(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            target = Path(tmp) / "repo-hygiene.json"
+            state = write_repo_hygiene_state(
+                clean=False,
+                verification_artifacts_present=True,
+                touched_file_coverage_present=False,
+                path=target,
+            )
+            self.assertTrue(target.exists())
+            self.assertEqual(
+                json.loads(target.read_text(encoding="utf-8")),
+                state,
+            )
+
     def test_blocks_release_claim_when_repo_marked_dirty(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             env = {**os.environ, "TAG_HOME": tmp}

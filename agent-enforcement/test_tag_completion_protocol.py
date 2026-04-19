@@ -224,6 +224,21 @@ class TagCompletionProtocolTests(unittest.TestCase):
             )
             self.assertEqual(data, {})
 
+    def test_completion_claim_guard_blocks_final_claim_in_response_without_claim_type(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = {**os.environ, "TAG_HOME": tmp}
+            data = _run_hook(
+                "completion-claim-guard.py",
+                {
+                    "response": "Done. The issue is fixed.",
+                    "work_type": "code",
+                    "evidence_ids": [],
+                },
+                env=env,
+            )
+            self.assertEqual(data["decision"], "block")
+            self.assertIn("evidence", data["reason"])
+
     def test_completion_claim_guard_allows_skip_reason_when_policy_explicitly_permits_it(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             env = {**os.environ, "TAG_HOME": tmp}

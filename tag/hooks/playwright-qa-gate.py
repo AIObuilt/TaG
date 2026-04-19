@@ -54,7 +54,7 @@ def main() -> int:
         print(json.dumps({"decision": "hold", "reason": "browser-qa-evidence-required"}))
         return 0
     except Exception:
-        print(json.dumps({}))
+        print(json.dumps({"decision": "hold", "reason": "browser-qa-gate-error"}))
         return 0
 
 

@@ -250,6 +250,51 @@ class TagBrowserProtocolGateTests(unittest.TestCase):
             self.assertEqual(data["decision"], "hold")
             self.assertIn("security", data["reason"])
 
+    def test_security_gate_holds_preview_work_with_stale_security_evidence(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = {**os.environ, "TAG_HOME": tmp}
+            evidence_file = Path(tmp) / "tag-runtime" / "context" / "verification-evidence.jsonl"
+            append_evidence_record(
+                evidence_file,
+                EvidenceRecord(
+                    evidence_id="ev-sec-stale",
+                    kind="security",
+                    tool="playwright",
+                    target="https://old-preview.example.test",
+                    status="pass",
+                    summary="baseline browser security passed for an older target",
+                    artifacts=[],
+                ),
+            )
+            data = _run_hook(
+                "playwright-security-gate.py",
+                {
+                    "claim_type": "release",
+                    "work_type": "preview",
+                    "evidence_ids": ["ev-sec-stale"],
+                    "target": "https://preview.example.test",
+                },
+                env,
+            )
+            self.assertEqual(data["decision"], "hold")
+            self.assertIn("security", data["reason"])
+
+    def test_security_gate_allows_skip_with_reason(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            env = {**os.environ, "TAG_HOME": tmp}
+            data = _run_hook(
+                "playwright-security-gate.py",
+                {
+                    "claim_type": "release",
+                    "work_type": "preview",
+                    "evidence_ids": [],
+                    "target": "https://preview.example.test",
+                    "skip_reason": "security checks completed in an upstream gated job",
+                },
+                env,
+            )
+            self.assertEqual(data, {})
+
     def test_security_gate_ignores_in_progress_payloads(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             env = {**os.environ, "TAG_HOME": tmp}
