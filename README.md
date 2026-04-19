@@ -111,6 +111,15 @@ The delivery layer is separate and still evolving:
 
 That split is intentional. The governance core should be inspectable, runnable, and useful on its own.
 
+## Engineering Protocol
+
+TaG open core includes universal engineering governance primitives:
+- evidence-backed verification before completion
+- repo hygiene checks for release/finalization
+- browser QA protocol for UI-facing work
+- browser security protocol for preview and deploy surfaces
+- model-agnostic verification playbooks and Playwright starter templates
+
 ## Example
 
 If an agent tries to deploy without passing build, security, or QA gates, TaG blocks the action before it happens.
