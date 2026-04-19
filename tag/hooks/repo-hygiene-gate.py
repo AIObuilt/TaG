@@ -10,21 +10,16 @@ from tag_config import CONTEXT_DIR
 
 
 REPO_HYGIENE_FILE = CONTEXT_DIR / "repo-hygiene.json"
-DEFAULT_REPO_HYGIENE = {
-    "clean": True,
-    "verification_artifacts_present": True,
-    "touched_file_coverage_present": False,
-}
-
-
-def load_repo_hygiene() -> dict | None:
+def load_repo_hygiene() -> tuple[str, dict | None]:
     if not REPO_HYGIENE_FILE.exists():
-        return DEFAULT_REPO_HYGIENE.copy()
+        return "missing", None
     try:
         data = json.loads(REPO_HYGIENE_FILE.read_text(encoding="utf-8"))
     except Exception:
-        return None
-    return data if isinstance(data, dict) else None
+        return "invalid", None
+    if not isinstance(data, dict):
+        return "invalid", None
+    return "present", data
 
 
 def hold(reason: str) -> int:
@@ -49,8 +44,10 @@ def main() -> int:
     except Exception:
         return hold("coding-protocol-unavailable")
 
-    state = load_repo_hygiene()
-    if state is None:
+    state_status, state = load_repo_hygiene()
+    if state_status == "missing":
+        return hold("repo-hygiene-state-missing")
+    if state_status == "invalid" or state is None:
         return hold("repo-hygiene-state-invalid")
 
     hygiene_policy = protocol["repo_hygiene"]

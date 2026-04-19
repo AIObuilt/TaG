@@ -106,11 +106,12 @@ class TagRepoHygieneGateTests(unittest.TestCase):
             self.assertEqual(data["decision"], "hold")
             self.assertIn("dirty", data["reason"])
 
-    def test_allows_release_claim_when_repo_hygiene_state_is_missing(self) -> None:
+    def test_blocks_release_claim_when_repo_hygiene_state_is_missing(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             env = {**os.environ, "TAG_HOME": tmp}
             data = _run_hook({"claim_type": "release"}, env)
-            self.assertEqual(data, {})
+            self.assertEqual(data["decision"], "hold")
+            self.assertIn("missing", data["reason"])
 
     def test_blocks_complete_claim_when_repo_is_dirty(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
@@ -146,9 +147,19 @@ class TagRepoHygieneGateTests(unittest.TestCase):
             self.assertEqual(data["decision"], "hold")
             self.assertIn("verification-artifacts", data["reason"])
 
-    def test_missing_state_does_not_imply_touched_file_coverage_when_required(self) -> None:
+    def test_blocks_claim_when_touched_file_coverage_is_missing_and_state_exists(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:
             env = {**os.environ, "TAG_HOME": tmp}
+            _write_hygiene_state(
+                tmp,
+                json.dumps(
+                    {
+                        "clean": True,
+                        "verification_artifacts_present": True,
+                        "touched_file_coverage_present": False,
+                    }
+                ),
+            )
             policy = {
                 "verification": {
                     "required_for_completion": True,
