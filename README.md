@@ -6,7 +6,7 @@
 
 **Local-first governance for AI agents, sub-agents, and human operators working inside the same execution system.**
 
-TaG is the open governance core for controlling what an actor can do, what evidence is required before work is considered complete, and what stays inside scope while the system is running.
+TaG is the open governance core for controlling what an actor can do, what evidence is required before work is considered complete, and what stays inside scope while the system is running. TaG also provides a 3-layer persistent memory system that carries context across sessions and restarts, and a local operational dashboard for monitoring governance, memory, and hook status in real time.
 
 The open-source core runs locally. No hosted dependency, no telemetry, no account.
 
@@ -50,6 +50,68 @@ Supporting surfaces in the repo include:
 - model-agnostic verification playbooks
 
 This is the open-core slice of workflow enforcement: verification before completion, repo hygiene before finalization, and browser QA/security evidence before UI or deploy-adjacent work can close.
+
+---
+
+## Persistent Memory
+
+TaG includes a 3-layer memory system that persists context across sessions, actors, and restarts.
+
+| Layer | Purpose | Storage |
+|-------|---------|---------|
+| **Heartbeat** | Real-time session state — what is happening right now | `heartbeat.json` |
+| **Engram** | Consolidated rules, decisions, and patterns | `engram.jsonl` |
+| **Hindsight** | Long-term searchable archive of all session history | `hindsight.jsonl` |
+
+All memory lives under `tag-runtime/context/` and requires no external database or service.
+
+### Usage
+
+```python
+from tag.memory import Heartbeat, Engram, Hindsight, resolve_memory
+
+# Layer 1: Heartbeat — track session activity
+heartbeat = Heartbeat()
+heartbeat.pulse(call_count=12, files_changed=["src/main.py"])
+heartbeat.is_alive()  # True if pulsed within 5 minutes
+
+# Layer 2: Engram — save rules and recall by keyword
+engram = Engram()
+engram.save("Always run tests before deploy", tags=["workflow", "testing"])
+engram.recall("deploy testing")  # keyword search across content and tags
+
+# Layer 3: Hindsight — long-term archive with search
+hindsight = Hindsight()
+hindsight.save("Deployed v2.1 to production", source="deploy-agent", tags=["deploy"])
+hindsight.recall("production deploy")  # search the archive
+hindsight.stats()  # {"total": N, "sources": {...}, "tags": {...}}
+
+# Unified interface
+memory = resolve_memory()
+memory.status()  # combined status of all 3 layers
+```
+
+Memory is populated automatically by TaG hooks (`memory-autosave`, `session-autosave`) and can be written to explicitly by any governed actor.
+
+---
+
+## Dashboard
+
+TaG ships with a local operational dashboard — no hosted service required.
+
+The dashboard shows:
+- **Governance status** — governed mode, authority matrix, active hooks
+- **Memory layers** — heartbeat pulse, engram entries, hindsight archive stats
+- **Recent decisions** — governance allow/hold/block log
+- **Hook status** — which hooks are installed and active
+
+### Launch
+
+```bash
+python3 tag_serve.py
+```
+
+The dashboard opens at `http://localhost:18800`. Set `TAG_UI_PORT` to change the port.
 
 ---
 
@@ -135,14 +197,15 @@ This repository includes:
 
 - local trust and governance hooks
 - workflow policy/compiler surfaces
-- operational-memory structure
+- 3-layer persistent memory system (heartbeat, engram, hindsight)
 - fork and runtime templates
 - engineering protocol enforcement
 - delivery phase-one primitives for setup and governed install state
+- local operational dashboard
+- launcher script (`tag_serve.py`)
 
 The broader product layer is separate and still evolving:
 
-- local GUI installer
 - hosted onboarding
 - billing, fleet, and support surfaces
 - cost-aware multi-provider routing
@@ -178,7 +241,10 @@ cd TaG
 export TAG_HOME=$(pwd)
 mkdir -p tag-runtime/config
 cp tag/config/authority-matrix.template.json tag-runtime/config/authority-matrix.json
+python3 tag_serve.py
 ```
+
+The dashboard opens in your browser after setup.
 
 ## Verify
 
@@ -212,6 +278,15 @@ python3 agent-enforcement/test_tag_completion_protocol.py
 python3 agent-enforcement/test_tag_repo_hygiene_gate.py
 python3 agent-enforcement/test_tag_playwright_templates.py
 python3 agent-enforcement/test_tag_browser_protocol_gates.py
+```
+
+Memory system:
+
+```bash
+python3 agent-enforcement/test_tag_memory_heartbeat.py
+python3 agent-enforcement/test_tag_memory_engram.py
+python3 agent-enforcement/test_tag_memory_hindsight.py
+python3 agent-enforcement/test_tag_memory_system.py
 ```
 
 Delivery phase-one primitives:
