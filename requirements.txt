@@ -1,0 +1,2 @@
+# TaG has no external dependencies.
+# The entire framework runs on the Python standard library.
