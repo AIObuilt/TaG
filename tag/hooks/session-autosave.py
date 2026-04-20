@@ -7,6 +7,12 @@ from datetime import datetime
 import _tag_bootstrap  # noqa: F401
 from tag_config import HEARTBEAT_FILE, SESSION_MEMORY_FILE, PRODUCT_NAME
 
+try:
+    from tag.memory.hindsight import Hindsight
+    _memory_available = True
+except ImportError:
+    _memory_available = False
+
 
 def main() -> int:
     state = {}
@@ -29,6 +35,27 @@ def main() -> int:
         "agents_launched": state.get("agents_launched", []),
     }
     SESSION_MEMORY_FILE.write_text(json.dumps(payload, indent=2), encoding="utf-8")
+
+    if _memory_available:
+        try:
+            call_count = state.get("call_count", 0)
+            files_changed = state.get("files_changed", [])
+            files_read = state.get("files_read", [])
+            summary = (
+                f"{call_count} tool calls. "
+                f"Files changed: {len(files_changed)}. "
+                f"Files read: {len(files_read)}."
+            )
+            hindsight = Hindsight()
+            hindsight.save(
+                summary,
+                source="session-autosave",
+                tags=["session", "autosave"],
+                metadata=payload,
+            )
+        except Exception:
+            pass
+
     print("{}")
     return 0
 

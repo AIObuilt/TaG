@@ -11,6 +11,13 @@ from _tag_guard_common import audit_log_entry, load_optional_json, save_json
 from tag.memory.provider import resolve_provider
 from tag_config import HEARTBEAT_FILE
 
+try:
+    from tag.memory.hindsight import Hindsight
+    from tag.memory.heartbeat import Heartbeat
+    _memory_available = True
+except ImportError:
+    _memory_available = False
+
 
 def main() -> int:
     try:
@@ -46,8 +53,19 @@ def main() -> int:
             "type": "session_summary",
         }
     )
-    state["cleanly_ended"] = True
-    save_json(HEARTBEAT_FILE, state)
+
+    if _memory_available:
+        try:
+            hindsight = Hindsight()
+            hindsight.save(summary, source="memory-autosave", tags=["session", "autosave"])
+            heartbeat = Heartbeat()
+            heartbeat.end_session()
+        except Exception:
+            pass
+    else:
+        state["cleanly_ended"] = True
+        save_json(HEARTBEAT_FILE, state)
+
     audit_log_entry("memory-autosave", "SAVED", f"{call_count} calls")
     print(json.dumps({}))
     return 0
