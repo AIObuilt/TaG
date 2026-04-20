@@ -4,10 +4,12 @@
 
 TaG adds governance to your AI agent. Every action your agent takes — writing files, running commands, making API calls — goes through TaG's policy engine first. Dangerous actions get blocked before they happen.
 
+TaG works with any LLM agent that supports shell-based pre-execution hooks: Claude Code, Codex CLI, Cursor, or any agent you build yourself using the Anthropic SDK or other provider SDKs.
+
 ## Prerequisites
 
 - Python 3.10+
-- An AI coding agent (Claude Code, Cursor, or similar)
+- An AI agent with pre-execution hook support
 
 ## Install (2 minutes)
 
@@ -22,26 +24,61 @@ python3 tag_serve.py
 
 The dashboard opens at `http://localhost:18800` after setup.
 
-## Connect to Claude Code (5 minutes)
+## How the Hook Interface Works
 
-TaG hooks plug directly into Claude Code's hook system. Each hook is a Python script that receives tool call events via stdin, checks policy, and returns an allow or block decision via stdout.
+TaG hooks are plain Python scripts. The integration pattern is identical regardless of which agent you use:
 
-**Step 1 — Open your Claude Code settings file:**
+1. Your agent is about to execute a tool call (read a file, run a command, fetch a URL, etc.)
+2. The agent pipes a JSON description of that call to the hook's stdin
+3. The hook evaluates it against policy and prints a result to stdout
+4. The agent reads the result: empty object `{}` means allow, a `decision: block` object means stop
 
-```bash
-cat ~/.claude/settings.json
+**Input** (what the agent sends to stdin):
+```json
+{
+  "tool_name": "Bash",
+  "tool_input": {
+    "command": "curl https://api.stripe.com/v1/charges"
+  }
+}
 ```
 
-If the file doesn't exist yet, create it:
+**Output** (what the hook prints to stdout):
+- Allow: `{}`
+- Block: `{"decision": "block", "reason": "SPENDING BLOCKED: command targets payment endpoint"}`
+
+Every block is also written to an audit log under `tag-runtime/logs/`.
+
+## Test a Hook Standalone (No Agent Required)
+
+Before wiring TaG into any agent, verify it works directly from the terminal. Run from your TaG directory:
 
 ```bash
-mkdir -p ~/.claude
-touch ~/.claude/settings.json
+# Should be blocked — .env file access
+echo '{"tool_name": "Read", "tool_input": {"file_path": ".env"}}' | python3 tag/hooks/env-guard.py
+
+# Should be blocked — payment API call
+echo '{"tool_name": "Bash", "tool_input": {"command": "curl https://api.stripe.com/v1/charges"}}' | python3 tag/hooks/spending-guard.py
+
+# Should be allowed — ordinary file read
+echo '{"tool_name": "Read", "tool_input": {"file_path": "README.md"}}' | python3 tag/hooks/env-guard.py
 ```
 
-**Step 2 — Add TaG hooks to the `hooks` section.**
+A blocked call prints something like:
+```json
+{"decision": "block", "reason": "BLOCKED: ..."}
+```
 
-Replace `/path/to/TaG` with the directory where you cloned TaG (e.g. `/Users/you/TaG`):
+An allowed call prints:
+```json
+{}
+```
+
+## Connect to Your Agent
+
+### Claude Code
+
+Claude Code reads pre-execution hooks from `~/.claude/settings.json`. Add a `PreToolUse` entry for each hook you want active:
 
 ```json
 {
@@ -67,49 +104,54 @@ Replace `/path/to/TaG` with the directory where you cloned TaG (e.g. `/Users/you
 }
 ```
 
-**Step 3 — That's it.** Claude Code will now route every tool call through TaG's guards before executing.
+Replace `/path/to/TaG` with your actual TaG directory (run `pwd` inside the cloned folder to get it). Restart Claude Code after saving.
 
-> **Tip:** To find your TaG directory path, run `pwd` inside the cloned TaG folder.
+### Codex CLI
 
-## Verify It Works
-
-Ask Claude to read a `.env` file:
-
-```
-Read the file .env
-```
-
-`env-guard` will block it and Claude will report that the action was blocked. You'll also see the decision logged in the dashboard at `http://localhost:18800`.
-
-To verify `spending-guard`, ask Claude to run a command like:
-
-```
-Run: curl https://api.stripe.com/v1/charges
-```
-
-The hook will block it before the command executes.
-
-## How the Hooks Work
-
-Each hook receives a JSON object on stdin describing the tool call Claude is about to make:
+Codex CLI supports a `exec` hook in its config file. Add TaG hooks to the `hooks.preExec` array in your Codex config:
 
 ```json
 {
-  "tool_name": "Bash",
-  "tool_input": {
-    "command": "curl https://api.stripe.com/v1/charges"
+  "hooks": {
+    "preExec": [
+      "python3 /path/to/TaG/tag/hooks/spending-guard.py",
+      "python3 /path/to/TaG/tag/hooks/env-guard.py"
+    ]
   }
 }
 ```
 
-The hook evaluates the call against its policy and prints a JSON result to stdout:
+Codex pipes the tool call JSON to stdin and expects the same allow/block response on stdout.
 
-- **Allow:** `{}` (empty object — execution continues)
-- **Block:** `{"decision": "block", "reason": "explanation shown to the agent"}`
+### Any Agent (Generic Pattern)
 
-Every block is also written to an audit log under `tag-runtime/logs/`.
+If your agent supports shell-based pre-execution hooks, the pattern is:
+
+1. Before executing a tool, pipe the call as JSON to `python3 /path/to/TaG/tag/hooks/<hook>.py`
+2. Read stdout. If it contains `"decision": "block"`, abort the tool call and surface the `reason` to the user
+3. Otherwise, proceed
+
+To integrate TaG into a custom agent built with the Anthropic SDK or any other framework, add a pre-execution step that calls each hook script and checks the result before invoking the tool.
+
+## Verify It Works with Your Agent
+
+Once hooks are configured, test from inside your agent session:
+
+**Test env-guard** — ask your agent to read a `.env` file:
+```
+Read the file .env
+```
+The agent should report the action was blocked.
+
+**Test spending-guard** — ask your agent to run:
+```
+Run: curl https://api.stripe.com/v1/charges
+```
+The hook blocks it before the command executes. You'll also see the decision in the dashboard at `http://localhost:18800`.
 
 ## What Each Hook Does
+
+**Governance hooks** (block dangerous actions before they happen):
 
 | Hook | What it blocks |
 |------|---------------|
@@ -130,7 +172,7 @@ Every block is also written to an audit log under `tag-runtime/logs/`.
 | `playwright-qa-gate` | UI completion claims without browser QA evidence |
 | `playwright-security-gate` | Deploy-adjacent claims without browser security evidence |
 
-**Operational hooks** (add to `PostToolUse` or `Stop` events):
+**Operational hooks** (run on post-execution or stop events):
 
 | Hook | What it does |
 |------|-------------|
@@ -142,7 +184,7 @@ Every block is also written to an audit log under `tag-runtime/logs/`.
 
 ## Customize Your Authority Matrix
 
-The authority matrix at `tag-runtime/config/authority-matrix.json` controls which credentials belong to which project forks. The default template looks like this:
+`tag-runtime/config/authority-matrix.json` controls which credentials belong to which project forks. The default template:
 
 ```json
 {
@@ -168,13 +210,13 @@ The authority matrix at `tag-runtime/config/authority-matrix.json` controls whic
 }
 ```
 
-Edit this file to match your project layout:
+Edit this to match your project layout:
 
 - Add entries under `forks` for each sub-project or agent working area.
 - Add entries under `credential_scopes` for each secret or API key, listing which forks are allowed to use it.
 - Use `"forks": ["shared"]` for credentials any fork may access.
 
-Once saved, `credential-scope-guard` enforces these boundaries automatically.
+`credential-scope-guard` enforces these boundaries automatically once the file is saved.
 
 ## Launch the Dashboard
 
@@ -194,43 +236,3 @@ Set `TAG_UI_PORT` to run on a different port:
 ```bash
 TAG_UI_PORT=9000 python3 tag_serve.py
 ```
-
-## Add More Hooks
-
-To add more hooks, extend the `PreToolUse` array in `~/.claude/settings.json`:
-
-```json
-{
-  "hooks": {
-    "PreToolUse": [
-      {
-        "type": "command",
-        "command": "python3 /path/to/TaG/tag/hooks/spending-guard.py",
-        "timeout": 5000
-      },
-      {
-        "type": "command",
-        "command": "python3 /path/to/TaG/tag/hooks/env-guard.py",
-        "timeout": 5000
-      },
-      {
-        "type": "command",
-        "command": "python3 /path/to/TaG/tag/hooks/credential-scope-guard.py",
-        "timeout": 5000
-      },
-      {
-        "type": "command",
-        "command": "python3 /path/to/TaG/tag/hooks/webfetch-exfil-guard.py",
-        "timeout": 5000
-      },
-      {
-        "type": "command",
-        "command": "python3 /path/to/TaG/tag/hooks/fork-scope-guard.py",
-        "timeout": 5000
-      }
-    ]
-  }
-}
-```
-
-Restart Claude Code after editing `settings.json` for changes to take effect.
