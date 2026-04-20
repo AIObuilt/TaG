@@ -118,6 +118,17 @@ def _recent_decisions(limit: int = 20) -> list[dict]:
     return decisions[:limit]
 
 
+def _mark_setup_complete() -> None:
+    try:
+        matrix_path = cfg.AUTHORITY_MATRIX_FILE
+        matrix_path.parent.mkdir(parents=True, exist_ok=True)
+        existing = _read_json(matrix_path)
+        existing["governed"] = True
+        matrix_path.write_text(json.dumps(existing, indent=2), encoding="utf-8")
+    except Exception:
+        pass
+
+
 def _build_status() -> dict:
     return {
         "governance": _governance_state(),
@@ -189,6 +200,19 @@ class _Handler(BaseHTTPRequestHandler):
             self._send_json(_build_status())
         else:
             self._serve_static(path)
+
+    def do_POST(self) -> None:
+        path = self.path.split("?", 1)[0]
+        if path == "/api/setup-complete":
+            try:
+                content_length = int(self.headers.get("Content-Length", 0))
+                self.rfile.read(content_length)
+            except Exception:
+                pass
+            _mark_setup_complete()
+            self._send_json({"status": "ok"})
+        else:
+            self.send_error(404)
 
 
 def serve(port: int = 18800) -> None:

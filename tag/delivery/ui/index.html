@@ -7,7 +7,157 @@
     <link rel="stylesheet" href="./app.css" />
   </head>
   <body>
-    <div class="app">
+    <!-- Setup Wizard -->
+    <div class="wizard-overlay" id="wizard-overlay" style="display:none">
+      <div class="wizard-container">
+        <div class="wizard-header">
+          <div class="brand">
+            <div class="brand-mark">T</div>
+            <div class="brand-text">
+              <p class="eyebrow">Trust and Governance</p>
+              <h1 class="brand-name">TaG Setup</h1>
+            </div>
+          </div>
+          <div class="wizard-steps" id="wizard-steps">
+            <div class="wizard-step active" data-step="1">1</div>
+            <div class="wizard-step-line"></div>
+            <div class="wizard-step" data-step="2">2</div>
+            <div class="wizard-step-line"></div>
+            <div class="wizard-step" data-step="3">3</div>
+            <div class="wizard-step-line"></div>
+            <div class="wizard-step" data-step="4">4</div>
+          </div>
+        </div>
+
+        <!-- Step 1: Welcome -->
+        <div class="wizard-step-panel active" id="wizard-step-1">
+          <div class="wizard-step-content">
+            <div class="wizard-icon">&#x1F6E1;</div>
+            <h2 class="wizard-title">TaG is ready to govern your AI agents</h2>
+            <p class="wizard-desc">Let's connect it to your agent's execution path.</p>
+            <div class="wizard-explainer">
+              <div class="wizard-explainer-row">
+                <span class="wizard-explainer-dot accent"></span>
+                <span>TaG hooks into your agent's execution path before any action runs.</span>
+              </div>
+              <div class="wizard-explainer-row">
+                <span class="wizard-explainer-dot green"></span>
+                <span>Every tool call goes through policy checks — credential exposure, API spend, scope boundaries.</span>
+              </div>
+              <div class="wizard-explainer-row">
+                <span class="wizard-explainer-dot warm"></span>
+                <span>Works with any LLM agent: Claude Code, Codex CLI, Cursor, and more.</span>
+              </div>
+            </div>
+          </div>
+          <div class="wizard-actions">
+            <button class="btn btn-primary" onclick="wizardNext()">Get Started</button>
+          </div>
+        </div>
+
+        <!-- Step 2: Choose Agent -->
+        <div class="wizard-step-panel" id="wizard-step-2">
+          <div class="wizard-step-content">
+            <h2 class="wizard-title">Choose your agent</h2>
+            <p class="wizard-desc">TaG is LLM-agnostic — it works with all of them.</p>
+            <div class="agent-cards" id="agent-cards">
+              <button class="agent-card" onclick="selectAgent('claude-code')">
+                <span class="agent-card-name">Claude Code</span>
+                <span class="agent-card-detail">.claude/settings.json</span>
+              </button>
+              <button class="agent-card" onclick="selectAgent('codex')">
+                <span class="agent-card-name">Codex CLI</span>
+                <span class="agent-card-detail">codex config</span>
+              </button>
+              <button class="agent-card" onclick="selectAgent('cursor')">
+                <span class="agent-card-name">Cursor</span>
+                <span class="agent-card-detail">cursor settings</span>
+              </button>
+              <button class="agent-card" onclick="selectAgent('other')">
+                <span class="agent-card-name">Other</span>
+                <span class="agent-card-detail">shell pre-execution hooks</span>
+              </button>
+            </div>
+            <div class="config-block" id="config-block" style="display:none">
+              <div class="config-block-header">
+                <span class="config-block-label" id="config-block-label">Configuration</span>
+                <button class="btn-copy" id="btn-copy" onclick="copyConfig()">Copy</button>
+              </div>
+              <pre class="config-pre" id="config-pre"></pre>
+            </div>
+          </div>
+          <div class="wizard-actions">
+            <button class="btn btn-ghost" onclick="wizardPrev()">Back</button>
+            <button class="btn btn-primary" onclick="wizardNext()">Next</button>
+          </div>
+        </div>
+
+        <!-- Step 3: Verify -->
+        <div class="wizard-step-panel" id="wizard-step-3">
+          <div class="wizard-step-content">
+            <h2 class="wizard-title">Verify TaG is working</h2>
+            <p class="wizard-desc">Ask your agent to read a <code class="inline-code">.env</code> file or run a deployment command.</p>
+            <div class="wizard-explainer">
+              <div class="wizard-explainer-row">
+                <span class="wizard-explainer-dot accent"></span>
+                <span>Your agent attempts the action</span>
+              </div>
+              <div class="wizard-explainer-dot-connector"></div>
+              <div class="wizard-explainer-row">
+                <span class="wizard-explainer-dot warn"></span>
+                <span>TaG intercepts and evaluates the request</span>
+              </div>
+              <div class="wizard-explainer-dot-connector"></div>
+              <div class="wizard-explainer-row">
+                <span class="wizard-explainer-dot red"></span>
+                <span>Sensitive actions are blocked — the dashboard updates with the decision</span>
+              </div>
+            </div>
+            <div class="config-block">
+              <div class="config-block-header">
+                <span class="config-block-label">Manual test (run in terminal)</span>
+                <button class="btn-copy" onclick="copyVerifyCmd()">Copy</button>
+              </div>
+              <pre class="config-pre" id="verify-cmd">echo '{"tool_name": "Read", "tool_input": {"file_path": ".env"}}' | python3 $TAG_HOME/tag/hooks/env-guard.py</pre>
+            </div>
+            <p class="wizard-hint">Expected output: <code class="inline-code">{"decision": "block", "reason": "..."}</code></p>
+          </div>
+          <div class="wizard-actions">
+            <button class="btn btn-ghost" onclick="wizardPrev()">Back</button>
+            <button class="btn btn-primary" onclick="wizardNext()">Looks good</button>
+          </div>
+        </div>
+
+        <!-- Step 4: Done -->
+        <div class="wizard-step-panel" id="wizard-step-4">
+          <div class="wizard-step-content">
+            <div class="wizard-icon wizard-icon-success">&#x2713;</div>
+            <h2 class="wizard-title">TaG is governing your agent</h2>
+            <p class="wizard-desc">Your dashboard is ready. Every agent action now goes through policy enforcement.</p>
+            <div class="wizard-explainer">
+              <div class="wizard-explainer-row">
+                <span class="wizard-explainer-dot green"></span>
+                <span>Credential exposure — blocked</span>
+              </div>
+              <div class="wizard-explainer-row">
+                <span class="wizard-explainer-dot green"></span>
+                <span>Uncontrolled API spending — blocked</span>
+              </div>
+              <div class="wizard-explainer-row">
+                <span class="wizard-explainer-dot green"></span>
+                <span>Cross-scope file and credential access — blocked</span>
+              </div>
+            </div>
+          </div>
+          <div class="wizard-actions">
+            <button class="btn btn-primary" onclick="completeSetup()">Open Dashboard</button>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <div class="app" id="main-app" style="display:none">
       <header class="header">
         <div class="brand">
           <div class="brand-mark">T</div>
@@ -130,7 +280,7 @@
 
         </aside>
       </div>
-    </div>
+    </div><!-- /.app#main-app -->
 
     <script src="./app.js"></script>
   </body>
