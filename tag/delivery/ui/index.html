@@ -3,30 +3,135 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>TaG Setup</title>
+    <title>TaG — Trust and Governance</title>
     <link rel="stylesheet" href="./app.css" />
   </head>
   <body>
-    <main class="app">
-      <section class="hero">
-        <p class="eyebrow">TaG Local Setup</p>
-        <h1>Governed mode required before TaG can be used</h1>
-        <p class="lede">Pick your runtime path, pair this machine, and complete governed activation.</p>
-      </section>
-      <section class="panel">
-        <h2>Runtime Path</h2>
-        <div class="choices">
-          <button data-runtime="managed">TaG-managed</button>
-          <button data-runtime="local">Self-managed local</button>
-          <button data-runtime="cloud">Self-managed cloud</button>
+    <div class="app">
+      <header class="header">
+        <div class="brand">
+          <div class="brand-mark">T</div>
+          <div class="brand-text">
+            <p class="eyebrow">Trust and Governance</p>
+            <h1 class="brand-name">TaG Dashboard</h1>
+          </div>
         </div>
-        <p class="hover-note">Hover help and guided explanations land in the next implementation task.</p>
-      </section>
-      <section class="panel">
-        <h2>Trust Status</h2>
-        <p id="governance-state">Governed mode inactive</p>
-      </section>
-      <script src="./app.js"></script>
-    </main>
+        <div class="header-status">
+          <span class="status-dot" id="system-health-dot"></span>
+          <span class="status-label" id="system-health-label">Connecting…</span>
+          <span class="badge" id="governed-badge">—</span>
+        </div>
+      </header>
+
+      <div class="layout">
+        <div class="main-col">
+
+          <section class="panel" id="governance-panel">
+            <div class="panel-header">
+              <span class="panel-eyebrow">Governance</span>
+              <h2 class="panel-title">Overview</h2>
+            </div>
+            <div class="stat-grid" id="governance-stats">
+              <div class="stat-card">
+                <div class="stat-label">Governed Mode</div>
+                <div class="stat-value" id="stat-governed">—</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Authority Matrix</div>
+                <div class="stat-value" id="stat-authority">—</div>
+              </div>
+              <div class="stat-card">
+                <div class="stat-label">Active Hooks</div>
+                <div class="stat-value" id="stat-hooks">—</div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel" id="memory-panel">
+            <div class="panel-header">
+              <span class="panel-eyebrow">Memory System</span>
+              <h2 class="panel-title">Three-Layer Store</h2>
+            </div>
+            <div class="memory-grid">
+              <div class="memory-card">
+                <div class="memory-card-header">
+                  <span class="memory-icon heartbeat-icon"></span>
+                  <span class="memory-title">Heartbeat</span>
+                </div>
+                <div class="memory-stat"><span class="memory-stat-label">Last Pulse</span><span class="memory-stat-value" id="hb-last-pulse">—</span></div>
+                <div class="memory-stat"><span class="memory-stat-label">Session</span><span class="memory-stat-value" id="hb-session">—</span></div>
+              </div>
+              <div class="memory-card">
+                <div class="memory-card-header">
+                  <span class="memory-icon engram-icon"></span>
+                  <span class="memory-title">Engram</span>
+                </div>
+                <div class="memory-stat"><span class="memory-stat-label">Entries</span><span class="memory-stat-value" id="eng-count">—</span></div>
+                <div class="memory-stat"><span class="memory-stat-label">Recent Tag</span><span class="memory-stat-value" id="eng-recent">—</span></div>
+              </div>
+              <div class="memory-card">
+                <div class="memory-card-header">
+                  <span class="memory-icon hindsight-icon"></span>
+                  <span class="memory-title">Hindsight</span>
+                </div>
+                <div class="memory-stat"><span class="memory-stat-label">Memories</span><span class="memory-stat-value" id="hs-count">—</span></div>
+                <div class="memory-stat"><span class="memory-stat-label">Sources</span><span class="memory-stat-value" id="hs-sources">—</span></div>
+              </div>
+            </div>
+          </section>
+
+          <section class="panel" id="decisions-panel">
+            <div class="panel-header">
+              <span class="panel-eyebrow">Audit Log</span>
+              <h2 class="panel-title">Recent Decisions</h2>
+            </div>
+            <div class="decisions-feed" id="decisions-feed">
+              <div class="decisions-empty">No governance decisions recorded yet.</div>
+            </div>
+          </section>
+
+        </div>
+
+        <aside class="sidebar">
+
+          <section class="panel" id="hooks-panel">
+            <div class="panel-header">
+              <span class="panel-eyebrow">Hooks</span>
+              <h2 class="panel-title">Hook Status</h2>
+            </div>
+            <div class="hooks-list" id="hooks-list">
+              <div class="hooks-empty">Loading…</div>
+            </div>
+          </section>
+
+          <section class="panel" id="setup-panel">
+            <div class="panel-header">
+              <span class="panel-eyebrow">Configuration</span>
+              <h2 class="panel-title">Setup</h2>
+            </div>
+            <div class="setup-rows">
+              <div class="setup-row">
+                <span class="setup-label">Runtime Path</span>
+                <span class="setup-value" id="setup-runtime">—</span>
+              </div>
+              <div class="setup-row">
+                <span class="setup-label">Config Dir</span>
+                <span class="setup-value mono" id="setup-config">—</span>
+              </div>
+              <div class="setup-row">
+                <span class="setup-label">Governed Mode</span>
+                <span class="setup-value" id="setup-governed">—</span>
+              </div>
+            </div>
+            <div class="setup-actions">
+              <button class="btn" id="btn-refresh">Refresh</button>
+            </div>
+          </section>
+
+        </aside>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
   </body>
 </html>
