@@ -4,9 +4,17 @@
 
 # TaG -- Trust and Governance for Agentic Execution
 
-**Local-first governance for AI agents, sub-agents, and human operators working inside the same execution system.**
+Most AI tools are easy to start and hard to trust.
 
-TaG is the open governance core for controlling what an actor can do, what evidence is required before work is considered complete, and what stays inside scope while the system is running. TaG also provides a 3-layer persistent memory system that carries context across sessions and restarts, and a local operational dashboard for monitoring governance, memory, and hook status in real time.
+They can answer fast, write fast, and act fast. They can also go off scope, waste money, leak data, skip verification, and tell you a job is done when it is not.
+
+TaG is the layer that makes AI usable in the real world.
+
+It is designed to feel simple on the surface and strict underneath:
+easy enough to step into,
+strong enough to protect you from the rocks.
+
+TaG is a local-first trust and governance layer for AI agents, sub-agents, and human operators working in the same execution system. It defines what an agent is allowed to do, what evidence it needs before claiming work is complete, and how work gets escalated when local execution is slow, wrong, or unsafe. TaG also provides a 3-layer persistent memory system that carries context across sessions and restarts, and a local operational dashboard for monitoring governance, memory, and hook status in real time.
 
 The open-source core runs locally. No hosted dependency, no telemetry, no account.
 
