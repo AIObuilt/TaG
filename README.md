@@ -199,9 +199,9 @@ The actor stays useful. The actor stops being unchecked.
 
 ---
 
-## Open Core
+## Source-Available Core
 
-**TaG's governance core is open.**
+**TaG's governance is a source-available core.**
 
 This repository includes:
 
