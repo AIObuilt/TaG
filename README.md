@@ -201,7 +201,7 @@ The actor stays useful. The actor stops being unchecked.
 
 ## Source-Available Core
 
-**TaG's governance is a source-available core.**
+**TaG's governance core is source-available, inspectable, and runnable locally.**
 
 This repository includes:
 
