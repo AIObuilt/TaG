@@ -14,9 +14,11 @@ It is designed to feel simple on the surface and strict underneath:
 easy enough to step into,
 strong enough to protect you from the rocks.
 
+TaG began as the governance layer behind real agent-built applications — including production businesses built and shipped by non-coders using AI coding agents. It is proof that non-technical operators can safely build, deploy, and run agent-powered products when the agent has governance, memory, verification, and execution controls around it.
+
 TaG is a local-first trust and governance layer for AI agents, sub-agents, and human operators working in the same execution system. It defines what an agent is allowed to do, what evidence it needs before claiming work is complete, and how work gets escalated when local execution is slow, wrong, or unsafe. TaG also provides a 3-layer persistent memory system that carries context across sessions and restarts, and a local operational dashboard for monitoring governance, memory, and hook status in real time.
 
-The open-source core runs locally. No hosted dependency, no telemetry, no account.
+The source-available open core runs locally. No hosted dependency, no telemetry, no account.
 
 ---
 
@@ -42,7 +44,7 @@ Additional operational hooks include `session-autosave`, `crash-checkpoint`, `co
 
 ### Engineering Protocol
 
-TaG open core also includes universal engineering governance primitives:
+TaG source-available open core also includes universal engineering governance primitives:
 
 - `verification-gate` blocks final code-completion claims without passing verification evidence
 - `completion-claim-guard` blocks final completion claims without evidence handles
@@ -57,7 +59,7 @@ Supporting surfaces in the repo include:
 - Playwright starter templates
 - model-agnostic verification playbooks
 
-This is the open-core slice of workflow enforcement: verification before completion, repo hygiene before finalization, and browser QA/security evidence before UI or deploy-adjacent work can close.
+This is the source-available open core slice of workflow enforcement: verification before completion, repo hygiene before finalization, and browser QA/security evidence before UI or deploy-adjacent work can close.
 
 ---
 
@@ -219,7 +221,7 @@ The broader product layer is separate and still evolving:
 - cost-aware multi-provider routing
 - continuity and failover behavior across deployments
 
-That split is intentional. The governance core should be inspectable, runnable, and useful on its own.
+That split is intentional. The governance core should be inspectable, runnable, and useful on its own. The public repo contains the local-first governance core. Additional hosted, onboarding, memory, and managed execution layers are part of the broader [AIO Built](https://aiobuilt.co) system.
 
 **TaG is model- and provider-agnostic by design, and enterprise deployments get access to cost-aware routing across latency, capability, and cost. Advanced continuity and failover behavior live in the product layer.**
 
@@ -263,7 +265,7 @@ for test in agent-enforcement/test_tag_*.py; do python3 "$test"; done
 python3 -m py_compile $(find tag -maxdepth 4 -name '*.py' -print)
 ```
 
-Everything in the open core is standard-library Python.
+Everything in the source-available open core is standard-library Python.
 
 ### Focused Verification
 
