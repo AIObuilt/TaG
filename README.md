@@ -18,7 +18,7 @@ TaG began as the governance layer behind real agent-built applications — inclu
 
 TaG is a local-first trust and governance layer for AI agents, sub-agents, and human operators working in the same execution system. It defines what an agent is allowed to do, what evidence it needs before claiming work is complete, and how work gets escalated when local execution is slow, wrong, or unsafe. TaG also provides a 3-layer persistent memory system that carries context across sessions and restarts, and a local operational dashboard for monitoring governance, memory, and hook status in real time.
 
-The source-available open core runs locally. No hosted dependency, no telemetry, no account.
+The source-available core runs locally. No hosted dependency, no telemetry, no account.
 
 ---
 
@@ -44,7 +44,7 @@ Additional operational hooks include `session-autosave`, `crash-checkpoint`, `co
 
 ### Engineering Protocol
 
-TaG source-available open core also includes universal engineering governance primitives:
+TaG source-available core also includes universal engineering governance primitives:
 
 - `verification-gate` blocks final code-completion claims without passing verification evidence
 - `completion-claim-guard` blocks final completion claims without evidence handles
@@ -59,7 +59,7 @@ Supporting surfaces in the repo include:
 - Playwright starter templates
 - model-agnostic verification playbooks
 
-This is the source-available open core slice of workflow enforcement: verification before completion, repo hygiene before finalization, and browser QA/security evidence before UI or deploy-adjacent work can close.
+This is the source-available core slice of workflow enforcement: verification before completion, repo hygiene before finalization, and browser QA/security evidence before UI or deploy-adjacent work can close.
 
 ---
 
@@ -158,7 +158,7 @@ TaG hook
 Allow / Hold / Block
 ```
 
-Policy is plain JSON. Governed state stays local. The open-source core does not require a server, account, or telemetry.
+Policy is plain JSON. Governed state stays local. The source-available core does not require a server, account, or telemetry.
 
 ---
 
@@ -267,6 +267,19 @@ python3 -m py_compile $(find tag -maxdepth 4 -name '*.py' -print)
 
 Everything in the source-available open core is standard-library Python.
 
+## Demo
+
+Run the reproducible governance proof:
+
+```bash
+bash tools/tag-demo-60s.sh
+```
+
+See:
+
+- `docs/demo/60-second-governance-demo.md`
+- `docs/demo/60-second-governance-demo.txt`
+
 ### Focused Verification
 
 Core governance:
@@ -351,4 +364,4 @@ Contact: vance@aiobuilt.co
 
 ## Contributing
 
-Open an issue or submit a pull request. Keep the open core standard-library only unless there is a very strong reason to break that rule.
+Open an issue or submit a pull request. Keep the source-available core standard-library only unless there is a very strong reason to break that rule.

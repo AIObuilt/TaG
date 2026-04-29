@@ -1,0 +1,22 @@
+TaG 60-second governance demo
+Repo: /tmp/aiobuilt-tag-fix.epZCEp
+
+== 1. .env staging attempt is blocked ==
+Hook: /tmp/aiobuilt-tag-fix.epZCEp/tag/hooks/env-guard.py
+Payload: {"tool_name":"Bash","tool_input":{"command":"git add .env"}}
+Result:
+{"decision": "block", "reason": "BLOCKED: git command references sensitive file pattern '\\.env\\b'. Never stage or commit environment files, credentials, private keys, or secrets."}
+
+== 2. Payment endpoint call is blocked ==
+Hook: /tmp/aiobuilt-tag-fix.epZCEp/tag/hooks/spending-guard.py
+Payload: {"tool_name":"Bash","tool_input":{"command":"curl https://api.stripe.com/v1/payment_intents"}}
+Result:
+{"decision": "block", "reason": "SPENDING BLOCKED: command targets payment endpoint matching 'api\\.stripe\\.com.*(charges|payment_intents|subscriptions|invoices|prices)'"}
+
+== 3. Final completion claim without evidence is blocked ==
+Hook: /tmp/aiobuilt-tag-fix.epZCEp/tag/hooks/completion-claim-guard.py
+Payload: {"claim_type":"complete","response":"Done. The issue is fixed.","work_type":"code","evidence_ids":[]}
+Result:
+{"decision": "block", "reason": "completion-claim-missing-evidence-handles"}
+
+Demo complete.
