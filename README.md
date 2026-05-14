@@ -1,212 +1,367 @@
 <p align="center">
-  <strong>TaG</strong><br>
-  <em>Trust and Governance for AI Agents</em>
+  <img src="assets/apple-icon.png" alt="TaG" width="120" />
 </p>
 
-<p align="center">
-  <a href="https://github.com/AIObuilt/TaG/stargazers"><img src="https://img.shields.io/github/stars/AIObuilt/TaG?style=social" alt="GitHub Stars"></a>
-  <a href="https://github.com/AIObuilt/TaG/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-BSL%201.1-blue" alt="License"></a>
-  <a href="https://github.com/AIObuilt/TaG"><img src="https://img.shields.io/github/last-commit/AIObuilt/TaG" alt="Last Commit"></a>
-  <a href="https://github.com/AIObuilt/TaG"><img src="https://img.shields.io/badge/platform-any-green" alt="Platform Agnostic"></a>
-</p>
+# TaG -- Trust and Governance for Agentic Execution
 
----
+Most AI tools are easy to start and hard to trust.
 
-# Your AI agents have no guardrails. TaG fixes that.
+They can answer fast, write fast, and act fast. They can also go off scope, waste money, leak data, skip verification, and tell you a job is done when it is not.
 
-TaG is a **local-first trust and governance layer** that sits between your AI agents and the damage they can do. It enforces spending limits, blocks credential leaks, gates deployments on actual QA, and routes work across models based on cost — not vendor defaults.
+TaG is the layer that makes AI usable in the real world.
 
-No hosted dependency. No telemetry. No account. Clone it and it works.
+It is designed to feel simple on the surface and strict underneath:
+easy enough to step into,
+strong enough to protect you from the rocks.
 
-**The hooks architecture in TaG is covered by patent filings that predate Microsoft's open-source release of similar functionality.** This isn't a reaction to Big Tech — it's what they caught up to.
+TaG began as the governance layer behind real agent-built applications — including production businesses built and shipped by non-coders using AI coding agents. It is proof that non-technical operators can safely build, deploy, and run agent-powered products when the agent has governance, memory, verification, and execution controls around it.
 
-> 447 clones from 2 posts. If you believe AI agents need a trust layer, **[star this repo](https://github.com/AIObuilt/TaG)** — it's how open-source projects get found.
+TaG is a local-first trust and governance layer for AI agents, sub-agents, and human operators working in the same execution system. It defines what an agent is allowed to do, what evidence it needs before claiming work is complete, and how work gets escalated when local execution is slow, wrong, or unsafe. TaG also provides a 3-layer persistent memory system that carries context across sessions and restarts, and a local operational dashboard for monitoring governance, memory, and hook status in real time.
 
----
-
-## What happens without TaG
-
-Your agent calls `stripe charges create` at 3am. Nobody stops it.
-
-Your agent pushes to production without running tests. The deploy hook doesn't exist.
-
-Your agent leaks your `.env` into a commit. You find out on Twitter.
-
-Your agent burns $400 on GPT-4 when a local model could have handled it.
-
-**TaG makes all of these impossible.**
-
----
-
-## 30-Second Quick Start
-
-```bash
-git clone https://github.com/AIObuilt/TaG.git
-cd TaG/tag
-
-# See what ships out of the box
-ls hooks/         # 17 governance hooks, ready to install
-ls config/        # routing baseline, authority matrix, coding protocol
-ls routing/       # local-first cost-aware model router
-
-# Run the governed read-only tool loop demo
-python3 tools/governed_readonly_tool_loop.py
-```
-
-That's it. No setup wizard. No API key. No Docker. Plain Python, plain JSON configs, plain trust.
+The source-available core runs locally. No hosted dependency, no telemetry, no account.
 
 ---
 
 ## What TaG Enforces
 
-17 production-tested governance hooks that run as pre-execution gates:
+### Runtime Governance
 
-| Hook | What It Blocks |
-|------|---------------|
-| `spending-guard` | Payment API calls (Stripe, billing endpoints, purchase URLs) |
-| `credential-scope-guard` | Cross-project credential exposure |
-| `env-guard` | `.env` and secrets in commits or tool output |
-| `webfetch-exfil-guard` | Data exfiltration via outbound requests |
-| `build-gate` | Completion claims without passing builds |
-| `security-gate` | Deploys without security review |
-| `qa-gate` | Production pushes without QA validation |
-| `fork-scope-guard` | Cross-project file access |
-| `os-acl-enforcer` | OS-level permission violations |
-| `delegate-enforcer` | Uncontrolled agent delegation |
-| `agent-enforcer` | Unauthorized actor assignment |
-| `session-autosave` | Session state loss on crash |
-| `crash-checkpoint` | Execution state loss on failure |
-| `compaction-recovery` | Context window compaction errors |
-| `memory-autosave` | Operational memory loss |
-| `skill-autoload` | Missing capability at execution time |
+| Threat | Hook |
+|--------|------|
+| Uncontrolled API/cloud spending | `spending-guard` |
+| Credential leaks across scopes | `credential-scope-guard` |
+| Deploying without passing build | `build-gate` |
+| Deploying without security review | `security-gate` |
+| Deploying without QA review | `qa-gate` |
+| Agents reading/writing outside their fork | `fork-scope-guard` |
+| Environment variable exposure | `env-guard` |
+| Data exfiltration via web requests | `webfetch-exfil-guard` |
+| Unauthorized OS-level access | `os-acl-enforcer` |
+| Uncontrolled agent delegation | `delegate-enforcer` |
+| Agent identity and assignment enforcement | `agent-enforcer` |
 
-Every hook writes to a local audit log. Every block is traceable.
+Additional operational hooks include `session-autosave`, `crash-checkpoint`, `compaction-recovery`, `memory-autosave`, and `skill-autoload`.
 
----
+### Engineering Protocol
 
-## Architecture
+TaG source-available core also includes universal engineering governance primitives:
 
-```
-┌─────────────────────────────────────────────┐
-│              Your Agent System              │
-│         (Claude, GPT, Ollama, etc.)         │
-└──────────────────┬──────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────┐
-│                 TaG Layer                   │
-│                                             │
-│  ┌───────────┐ ┌──────────┐ ┌───────────┐  │
-│  │  Hooks    │ │  Policy  │ │  Routing  │  │
-│  │ (17 gates)│ │  Engine  │ │ (local-1st)│  │
-│  └───────────┘ └──────────┘ └───────────┘  │
-│                                             │
-│  ┌───────────┐ ┌──────────┐ ┌───────────┐  │
-│  │  Memory   │ │  Audit   │ │  Config   │  │
-│  │(persistent)│ │  (local) │ │  (JSON)   │  │
-│  └───────────┘ └──────────┘ └───────────┘  │
-└──────────────────┬──────────────────────────┘
-                   │
-                   ▼
-┌─────────────────────────────────────────────┐
-│           Execution Targets                 │
-│    Local models, cloud APIs, tools, CLI     │
-└─────────────────────────────────────────────┘
-```
+- `verification-gate` blocks final code-completion claims without passing verification evidence
+- `completion-claim-guard` blocks final completion claims without evidence handles
+- `repo-hygiene-gate` blocks completion and release claims when repo-hygiene state is missing, dirty, or incomplete
+- `playwright-qa-gate` requires browser QA evidence for UI-facing completion claims
+- `playwright-security-gate` requires browser security evidence for preview and deploy-facing completion claims
 
-**Platform-agnostic.** TaG doesn't care if you run Claude Code, OpenAI Codex, Ollama, or something you built yourself. The governance layer wraps execution — it doesn't replace it.
+Supporting surfaces in the repo include:
+
+- coding protocol defaults in `tag/config/coding-protocol.json`
+- verification evidence models in `tag/verification/`
+- Playwright starter templates
+- model-agnostic verification playbooks
+
+This is the source-available core slice of workflow enforcement: verification before completion, repo hygiene before finalization, and browser QA/security evidence before UI or deploy-adjacent work can close.
 
 ---
 
-## Cost-Aware Routing
+## Persistent Memory
 
-TaG includes a local-first routing engine that picks the cheapest capable model, not the most expensive one:
+TaG includes a 3-layer memory system that persists context across sessions, actors, and restarts.
 
-```
-Local (free) → Gemini → OpenAI → xAI → Anthropic → Codex → Claude
-```
+| Layer | Purpose | Storage |
+|-------|---------|---------|
+| **Heartbeat** | Real-time session state — what is happening right now | `heartbeat.json` |
+| **Engram** | Consolidated rules, decisions, and patterns | `engram.jsonl` |
+| **Hindsight** | Long-term searchable archive of all session history | `hindsight.jsonl` |
 
-- **Local execution first** when the model is healthy and the task class matches
-- **Timeout-aware escalation** — if local fails, it moves up; it doesn't hang
-- **Session-aware routing** — multi-turn conversations stick to session-capable backends
-- **Vision-aware fallback** — image tasks route to capable models automatically
+All memory lives under `tag-runtime/context/` and requires no external database or service.
 
-Configuration is one JSON file: [`config/routing-baseline.json`](tag/config/routing-baseline.json)
+### Usage
 
----
+```python
+from tag.memory import Heartbeat, Engram, Hindsight, resolve_memory
 
-## Policy Engine
+# Layer 1: Heartbeat — track session activity
+heartbeat = Heartbeat()
+heartbeat.pulse(call_count=12, files_changed=["src/main.py"])
+heartbeat.is_alive()  # True if pulsed within 5 minutes
 
-TaG enforces workflow gates at the policy level:
+# Layer 2: Engram — save rules and recall by keyword
+engram = Engram()
+engram.save("Always run tests before deploy", tags=["workflow", "testing"])
+engram.recall("deploy testing")  # keyword search across content and tags
 
-- **Pre-commit:** build, security, and QA gates must pass
-- **Pre-deploy:** all pre-commit gates plus commit verification (enforcement: `hold`)
-- **Post-deploy:** live QA and live security validation required
+# Layer 3: Hindsight — long-term archive with search
+hindsight = Hindsight()
+hindsight.save("Deployed v2.1 to production", source="deploy-agent", tags=["deploy"])
+hindsight.recall("production deploy")  # search the archive
+hindsight.stats()  # {"total": N, "sources": {...}, "tags": {...}}
 
-The policy engine runs in `audit-first` mode by default — it logs everything and blocks sensitive actions. You can tighten to `hold` mode per workflow stage.
-
-Sensitive actions are held. Unknown actions are audited. Nothing runs untracked.
-
----
-
-## Who This Is For
-
-- **Developers building agent systems** who are tired of agents that can't be trusted
-- **Teams running multi-model architectures** who need cost control and routing
-- **Solo builders and small teams** who can't afford a $50K/year governance platform
-- **Anyone shipping AI to production** who needs an audit trail that isn't "we hope it works"
-
----
-
-## Project Structure
-
-```
-tag/
-├── hooks/          # 17 governance hooks (Python, zero external deps)
-├── config/         # Routing baseline, authority matrix, coding protocol, framework
-├── routing/        # Local-first cost-aware model router
-├── policy/         # Policy engine with workflow gate enforcement
-├── memory/         # Persistent local memory provider
-├── tools/          # Governed tool loop examples
-├── shared_brain/   # Agent context templates and handoff continuity
-└── forks/          # Multi-project isolation manifests
+# Unified interface
+memory = resolve_memory()
+memory.status()  # combined status of all 3 layers
 ```
 
----
-
-## Background
-
-TaG was built by [Jason McCall](https://linkedin.com/in/jasonmccall1) — not an engineer, but someone who spent two decades in automotive software and now operates AI agents for real business work. When your agents handle billing, deploys, and client communications, "hope it doesn't break" isn't a strategy.
-
-The hooks architecture in TaG is covered by patent filings. The core concepts — governance hooks as pre-execution gates, cost-aware multi-provider routing, bounded autonomy with audit trails — were filed before Microsoft released their open-source agent tooling. This is documented and timestamped.
-
-**Built because it had to exist, not because it was trendy.**
+Memory is populated automatically by TaG hooks (`memory-autosave`, `session-autosave`) and can be written to explicitly by any governed actor.
 
 ---
 
-## Licensing
+## Dashboard
 
-TaG is source-available under the **Business Source License 1.1**.
+TaG ships with a local operational dashboard — no hosted service required.
 
-- Non-production use: allowed under BSL terms
-- Production use: requires a commercial agreement until the Change Date
-- Change License: Apache License 2.0
+The dashboard shows:
+- **Governance status** — governed mode, authority matrix, active hooks
+- **Memory layers** — heartbeat pulse, engram entries, hindsight archive stats
+- **Recent decisions** — governance allow/hold/block log
+- **Hook status** — which hooks are installed and active
 
-The open rails are real. The managed layer (tuned routing, learned affinity, hosted monitoring) is separate and commercial.
+### Launch
 
-**Open the rails. Sell the train.**
+```bash
+python3 tag_serve.py
+```
 
----
-
-## Links
-
-- **GitHub:** [github.com/AIObuilt/TaG](https://github.com/AIObuilt/TaG)
-- **AIO Built:** [aiobuilt.com](https://aiobuilt.com)
-- **Jason McCall:** [LinkedIn](https://linkedin.com/in/jasonmccall1) · [X / Twitter](https://x.com/jasonic00)
-- **Demo:** [60-second governance proof](docs/demo/60-second-governance-demo.md)
+The dashboard opens at `http://localhost:18800`. Set `TAG_UI_PORT` to change the port.
 
 ---
 
-<p align="center">
-  <strong>If you think AI agents need guardrails before they need more features, <a href="https://github.com/AIObuilt/TaG">star this repo</a>.</strong>
-</p>
+## How It Works
+
+TaG hooks into the execution path before a governed action runs.
+
+For each governed action or completion claim, TaG can evaluate:
+
+- local policy
+- local runtime state
+- local evidence state
+
+The result is one of:
+
+- allow
+- hold
+- block
+
+```text
+Actor
+  |
+  v
+Action or completion claim
+  |
+  v
+TaG hook
+  |
+  +--> policy check
+  +--> runtime-state check
+  +--> evidence check
+  |
+  v
+Allow / Hold / Block
+```
+
+Policy is plain JSON. Governed state stays local. The source-available core does not require a server, account, or telemetry.
+
+---
+
+## Final Escalation
+
+TaG keeps escalation inside the same governed system.
+
+Models and sub-agents attempt the work first under the current policy, scope, and verification requirements. If the task still cannot be resolved, it escalates upward through more capable actors. The human is the final escalation point.
+
+When that happens, the human inherits the context of the escalation:
+
+- what was attempted
+- what failed
+- why the task escalated
+- what evidence exists
+- what boundaries still apply
+
+The human is not asked to reconstruct the problem from scratch. TaG preserves the history and hands over the task with context intact.
+
+---
+
+## Why This Exists
+
+AI agents now write code, run commands, manage credentials, call APIs, and move work toward release. Most systems still rely on broad permissions, weak scoping, and self-reported completion.
+
+TaG exists to put governance in the execution path before the actor can do damage.
+
+That means:
+
+- before money is spent
+- before credentials cross scope
+- before a release moves without build, security, and QA gates
+- before an actor crosses project boundaries
+- before sensitive data leaves through a web request
+- before work is declared complete without evidence
+
+The actor stays useful. The actor stops being unchecked.
+
+---
+
+## Source-Available Core
+
+**TaG's governance core is source-available, inspectable, and runnable locally.**
+
+This repository includes:
+
+- local trust and governance hooks
+- workflow policy/compiler surfaces
+- 3-layer persistent memory system (heartbeat, engram, hindsight)
+- fork and runtime templates
+- engineering protocol enforcement
+- delivery phase-one primitives for setup and governed install state
+- local operational dashboard
+- launcher script (`tag_serve.py`)
+
+The broader product layer is separate and still evolving:
+
+- hosted onboarding
+- billing, fleet, and support surfaces
+- cost-aware multi-provider routing
+- continuity and failover behavior across deployments
+
+That split is intentional. The governance core should be inspectable, runnable, and useful on its own. The public repo contains the local-first governance core. Additional hosted, onboarding, memory, and managed execution layers are part of the broader [AIO Built](https://aiobuilt.co) system.
+
+**TaG is model- and provider-agnostic by design, and enterprise deployments get access to cost-aware routing across latency, capability, and cost. Advanced continuity and failover behavior live in the product layer.**
+
+---
+
+## Example
+
+If an agent tries to deploy without passing build, security, or QA gates, TaG blocks the action before it happens.
+
+If an agent tries to access credentials owned by another fork, TaG blocks it and records the governed decision locally.
+
+If an agent tries to send sensitive data to a known capture endpoint, TaG blocks the request before the data leaves.
+
+If an actor tries to claim code is complete without verification evidence, or UI work is done without browser QA evidence, TaG can hold or block that completion path.
+
+That is the point of the system: not post-hoc analysis, but governed execution.
+
+---
+
+## Install
+
+TaG is pure Python with no external dependencies. Clone and configure:
+
+```bash
+git clone https://github.com/AIObuilt/TaG.git
+cd TaG
+export TAG_HOME=$(pwd)
+mkdir -p tag-runtime/config
+cp tag/config/authority-matrix.template.json tag-runtime/config/authority-matrix.json
+python3 tag_serve.py
+```
+
+The dashboard opens in your browser after setup.
+
+## Verify
+
+Run the full TaG suite:
+
+```bash
+for test in agent-enforcement/test_tag_*.py; do python3 "$test"; done
+python3 -m py_compile $(find tag -maxdepth 4 -name '*.py' -print)
+```
+
+Everything in the source-available open core is standard-library Python.
+
+## Demo
+
+Run the reproducible governance proof:
+
+```bash
+bash tools/tag-demo-60s.sh
+```
+
+See:
+
+- `docs/demo/60-second-governance-demo.md`
+- `docs/demo/60-second-governance-demo.txt`
+
+### Focused Verification
+
+Core governance:
+
+```bash
+python3 agent-enforcement/test_tag_governance_hooks.py
+python3 agent-enforcement/test_tag_spending_guard.py
+python3 agent-enforcement/test_tag_env_guard.py
+python3 agent-enforcement/test_tag_release_gates.py
+python3 agent-enforcement/test_tag_policy_model.py
+```
+
+Engineering protocol:
+
+```bash
+python3 agent-enforcement/test_tag_verification_evidence.py
+python3 agent-enforcement/test_tag_coding_protocol.py
+python3 agent-enforcement/test_tag_completion_protocol.py
+python3 agent-enforcement/test_tag_repo_hygiene_gate.py
+python3 agent-enforcement/test_tag_playwright_templates.py
+python3 agent-enforcement/test_tag_browser_protocol_gates.py
+```
+
+Memory system:
+
+```bash
+python3 agent-enforcement/test_tag_memory_heartbeat.py
+python3 agent-enforcement/test_tag_memory_engram.py
+python3 agent-enforcement/test_tag_memory_hindsight.py
+python3 agent-enforcement/test_tag_memory_system.py
+```
+
+Delivery phase-one primitives:
+
+```bash
+python3 agent-enforcement/test_tag_delivery_paths.py
+python3 agent-enforcement/test_tag_hosted_enrollment.py
+python3 agent-enforcement/test_tag_bootstrap_manifest.py
+python3 agent-enforcement/test_tag_setup_state.py
+python3 agent-enforcement/test_tag_governed_install.py
+python3 agent-enforcement/test_tag_delivery_ui.py
+python3 agent-enforcement/test_tag_setup_server.py
+```
+
+---
+
+## Authority Matrix
+
+The authority matrix maps forks and credential scopes to permitted resources:
+
+```json
+{
+  "forks": {
+    "sales": { "directory": "sales/" },
+    "support": { "directory": "support/" }
+  },
+  "credential_scopes": {
+    "stripe": { "forks": ["sales"] },
+    "zendesk": { "forks": ["support"] },
+    "openai": { "forks": ["shared"] }
+  }
+}
+```
+
+The `sales` fork can access Stripe credentials but not Zendesk, and vice versa. Violations are blocked and logged to local governed state under `tag-runtime/`.
+
+---
+
+## License
+
+Licensed under the [Business Source License 1.1](LICENSE). Free for internal use within your organization. Commercial restrictions apply to reselling or offering TaG as a managed service.
+
+---
+
+## About
+
+TaG is built by [AIO Built](https://aiobuilt.co).
+
+Contact: vance@aiobuilt.co
+
+---
+
+## Contributing
+
+Open an issue or submit a pull request. Keep the source-available core standard-library only unless there is a very strong reason to break that rule.
