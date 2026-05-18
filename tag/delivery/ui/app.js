@@ -16,7 +16,9 @@ var AGENT_CONFIGS = {
                     { matcher: ".*", hooks: [
                         { type: "command", command: "python3 $TAG_HOME/tag/hooks/env-guard.py" },
                         { type: "command", command: "python3 $TAG_HOME/tag/hooks/spending-guard.py" },
+                        { type: "command", command: "python3 $TAG_HOME/tag/hooks/budget-guard.py" },
                         { type: "command", command: "python3 $TAG_HOME/tag/hooks/credential-scope-guard.py" },
+                        { type: "command", command: "python3 $TAG_HOME/tag/hooks/actor-isolation-guard.py" },
                         { type: "command", command: "python3 $TAG_HOME/tag/hooks/fork-scope-guard.py" },
                         { type: "command", command: "python3 $TAG_HOME/tag/hooks/build-gate.py" }
                     ]}
@@ -36,7 +38,9 @@ var AGENT_CONFIGS = {
                 pre_exec: [
                     "python3 $TAG_HOME/tag/hooks/env-guard.py",
                     "python3 $TAG_HOME/tag/hooks/spending-guard.py",
+                    "python3 $TAG_HOME/tag/hooks/budget-guard.py",
                     "python3 $TAG_HOME/tag/hooks/credential-scope-guard.py",
+                    "python3 $TAG_HOME/tag/hooks/actor-isolation-guard.py",
                     "python3 $TAG_HOME/tag/hooks/fork-scope-guard.py",
                     "python3 $TAG_HOME/tag/hooks/build-gate.py"
                 ],
@@ -52,7 +56,9 @@ var AGENT_CONFIGS = {
             "# Pre-execution hooks — add each line as a separate hook command",
             "python3 $TAG_HOME/tag/hooks/env-guard.py",
             "python3 $TAG_HOME/tag/hooks/spending-guard.py",
+            "python3 $TAG_HOME/tag/hooks/budget-guard.py",
             "python3 $TAG_HOME/tag/hooks/credential-scope-guard.py",
+            "python3 $TAG_HOME/tag/hooks/actor-isolation-guard.py",
             "python3 $TAG_HOME/tag/hooks/fork-scope-guard.py",
             "python3 $TAG_HOME/tag/hooks/build-gate.py",
             "",
@@ -70,7 +76,9 @@ var AGENT_CONFIGS = {
             "# as pre-execution hooks in your agent's configuration:",
             "python3 $TAG_HOME/tag/hooks/env-guard.py",
             "python3 $TAG_HOME/tag/hooks/spending-guard.py",
+            "python3 $TAG_HOME/tag/hooks/budget-guard.py",
             "python3 $TAG_HOME/tag/hooks/credential-scope-guard.py",
+            "python3 $TAG_HOME/tag/hooks/actor-isolation-guard.py",
             "python3 $TAG_HOME/tag/hooks/fork-scope-guard.py",
             "python3 $TAG_HOME/tag/hooks/build-gate.py",
             "",

@@ -1,0 +1,7 @@
+{
+  "actors": {},
+  "defaults": {
+    "self_access": true,
+    "cross_access": false
+  }
+}
