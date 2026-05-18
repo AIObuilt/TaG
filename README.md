@@ -179,7 +179,7 @@ tag/
 
 ## Background
 
-TaG was built by [Jason McCall](https://linkedin.com/in/jasonmccall1) — two decades in automotive software, now operating AI agents for real business work. When your agents handle billing, deploys, and client communications, "hope it doesn't break" isn't a strategy.
+TaG was built by [Jason McCall](https://www.linkedin.com/in/jasonmccallexecutive/) — two decades in automotive software, now operating AI agents for real business work. When your agents handle billing, deploys, and client communications, "hope it doesn't break" isn't a strategy.
 
 Architecture predates Microsoft's open-source agent tooling release. Filings are timestamped.
 
@@ -206,8 +206,8 @@ The open rails are real. The managed layer (tuned routing, learned affinity, hos
 ## Links
 
 - **GitHub:** [github.com/AIObuilt/TaG](https://github.com/AIObuilt/TaG)
-- **AIO Built:** [aiobuilt.com](https://aiobuilt.com)
-- **Jason McCall:** [LinkedIn](https://linkedin.com/in/jasonmccall1) · [X / Twitter](https://x.com/jasonic00)
+- **AIO Built:** [aiobuilt.co](https://aiobuilt.co)
+- **Jason McCall:** [LinkedIn](https://www.linkedin.com/in/jasonmccallexecutive/) · [X / Twitter](https://x.com/iamjasonic)
 - **Demo:** [60-second governance proof](docs/demo/60-second-governance-demo.md)
 
 ---

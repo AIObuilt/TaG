@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 license = "LicenseRef-BSL-1.1"
 authors = [
-  { name = "Vance", email = "vance@aiobuilt.com" }
+  { name = "Vance", email = "vance@aiobuilt.co" }
 ]
 keywords = ["agents", "governance", "security", "trust", "routing"]
 classifiers = [
